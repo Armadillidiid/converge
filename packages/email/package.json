@@ -1,0 +1,38 @@
+{
+  "name": "@repo/email",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "dev": "email dev --port 3003 --dir templates",
+    "export": "email export --dir templates",
+    "dx": "docker compose up -d || docker-compose up -d"
+  },
+  "dependencies": {
+    "@react-email/components": "1.0.1",
+    "@react-email/preview-server": "^5.0.5",
+    "@t3-oss/env-nextjs": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-email": "5.0.5",
+    "resend": "^6.5.2",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "typescript": "catalog:"
+  }
+}

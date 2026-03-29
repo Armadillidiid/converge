@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_call:
+    inputs:
+      ref:
+        description: "Git ref to checkout"
+        type: string
+        required: false
+
+jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      packages: ${{ steps.filter.outputs.packages }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check for file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            app:
+              - 'apps/app/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'turbo.json'
+            packages:
+              - 'packages/**'
+
+  lint:
+    name: Lint
+    needs: detect-changes
+    if: needs.detect-changes.outputs.app == 'true' || needs.detect-changes.outputs.packages == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.head_ref }}
+
+      - name: Setup and Install
+        uses: ./.github/composite/pnpm-install
+
+      - name: Run Lint
+        run: pnpm turbo lint
+
+      - name: Check Formatting
+        run: pnpm format:check
+
+  typecheck:
+    name: Type Check
+    needs: detect-changes
+    if: needs.detect-changes.outputs.app == 'true' || needs.detect-changes.outputs.packages == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.head_ref }}
+
+      - name: Setup and Install
+        uses: ./.github/composite/pnpm-install
+
+      - name: Run Type Check
+        run: pnpm turbo typecheck
+
+  test:
+    name: Test
+    needs: detect-changes
+    if: needs.detect-changes.outputs.app == 'true' || needs.detect-changes.outputs.packages == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.head_ref }}
+
+      - name: Setup and Install
+        uses: ./.github/composite/pnpm-install
+
+      - name: Run Tests
+        run: pnpm turbo test
+
+  build:
+    name: Build
+    needs: detect-changes
+    if: needs.detect-changes.outputs.app == 'true' || needs.detect-changes.outputs.packages == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.head_ref }}
+
+      - name: Setup and Install
+        uses: ./.github/composite/pnpm-install
+
+      - name: Build Apps
+        run: pnpm turbo build --filter={./apps/*}
+        env:
+          NODE_ENV: production
+          SKIP_ENV_VALIDATION: 1
+
+  verify-sdk:
+    name: Verify SDK is up-to-date
+    needs: detect-changes
+    if: needs.detect-changes.outputs.app == 'true' || needs.detect-changes.outputs.packages == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.head_ref }}
+
+      - name: Setup and Install
+        uses: ./.github/composite/pnpm-install
+
+      - name: Regenerate SDK
+        run: pnpm turbo --filter=@repo/sdk build
+
+      - name: Check for uncommitted changes
+        run: |
+          if ! git diff --exit-code packages/sdk/; then
+            echo "SDK is out of date. Run 'pnpm turbo --filter @repo/sdk build' and commit the result."
+            git diff --stat packages/sdk/
+            exit 1
+          fi
+
+  ci-success:
+    name: CI Success
+    needs: [lint, typecheck, test, build, verify-sdk]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check CI Results
+        run: |
+          if [ "${{ needs.lint.result }}" = "failure" ] || \
+             [ "${{ needs.typecheck.result }}" = "failure" ] || \
+             [ "${{ needs.test.result }}" = "failure" ] || \
+             [ "${{ needs.build.result }}" = "failure" ] || \
+             [ "${{ needs.verify-sdk.result }}" = "failure" ]; then
+            echo "CI checks failed"
+            exit 1
+          fi
+          echo "All CI checks passed!"

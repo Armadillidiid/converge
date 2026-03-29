@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:17
+    ports:
+      - ${DATABASE_PORT:-5432}:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: "converge"
+      POSTGRES_PASSWORD: ""
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d converge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - converge
+
+networks:
+  converge:
+    external: true
+
+volumes:
+  db_data:

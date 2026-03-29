@@ -1,0 +1,52 @@
+{
+  "name": "@repo/database",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "index.ts",
+    "keys.ts",
+    "drizzle.config.ts",
+    "schemas"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./keys": "./keys.ts",
+    "./schemas/schema": "./schemas/schema.ts",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "push": "drizzle-kit push",
+    "pull": "drizzle-kit pull",
+    "check": "drizzle-kit check",
+    "up": "drizzle-kit up",
+    "studio": "drizzle-kit studio",
+    "seed": "tsx seed.ts",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "dx": "docker compose up -d || docker-compose up -d"
+  },
+  "dependencies": {
+    "@aws-sdk/client-rds-data": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
+    "dotenv": "catalog:",
+    "drizzle-orm": "catalog:",
+    "drizzle-seed": "^0.3.1",
+    "pg": "^8.18.0",
+    "server-only": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "^8.16.0",
+    "drizzle-kit": "1.0.0-beta.15-859cf75",
+    "typescript": "catalog:"
+  }
+}

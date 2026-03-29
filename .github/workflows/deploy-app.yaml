@@ -1,0 +1,91 @@
+name: Deploy App
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        type: string
+        required: true
+        default: "production"
+      ref:
+        description: "Git ref to deploy"
+        type: string
+        required: false
+    secrets:
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_PROJECT_ID:
+        required: true
+    outputs:
+      deployment-url:
+        description: "The URL of the deployment"
+        value: ${{ jobs.deploy.outputs.url }}
+
+jobs:
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Setup and Install
+        uses: ./.github/composite/pnpm-install
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Link Vercel Project
+        run: |
+          vercel link \
+            --yes \
+            --scope=${{ secrets.VERCEL_ORG_ID }} \
+            --project=${{ secrets.VERCEL_PROJECT_ID }} \
+            --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Pull Vercel Environment
+        run: |
+          vercel pull \
+            --yes \
+            --environment=${{ inputs.environment }} \
+            --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build with Vercel
+        run: |
+          vercel build \
+            --target=${{ inputs.environment }} \
+            --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NODE_ENV: production
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy \
+            --prebuilt \
+            --target=${{ inputs.environment }} \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --yes)
+          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "🚀 Deployed to: $DEPLOYMENT_URL"
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ Deployed to Vercel!\n\n🔗 **URL:** ${{ steps.deploy.outputs.url }}`
+            })

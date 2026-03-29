@@ -1,0 +1,56 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+      target: deps
+    command: >
+      sh -c "pnpm --filter @repo/api dev"
+    working_dir: /app
+    user: "1000:1000"
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    volumes:
+      - ../..:/app
+    env_file: .env
+    depends_on:
+      - redis
+    networks:
+      - converge
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+      target: deps
+    command: >
+      sh -c "pnpm --filter @repo/api worker:dev"
+    working_dir: /app
+    user: "1000:1000"
+    volumes:
+      - ../..:/app
+    env_file: .env
+    depends_on:
+      - redis
+    networks:
+      - converge
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2
+    ports:
+      - ${REDIS_PORT}:6379
+    command: ["redis-server", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - converge
+    restart: unless-stopped
+
+networks:
+  converge:
+    external: true
+
+volumes:
+  redis_data:

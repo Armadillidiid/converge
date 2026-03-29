@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@repo/sdk",
+  "type": "module",
+  "exports": {
+    ".": "./js/src/gen/index.ts",
+    "./client": "./js/src/gen/client.gen.ts",
+    "./client-core": "./js/src/gen/client/index.ts",
+    "./tanstack": "./js/src/gen/@tanstack/react-query.gen.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "build": "node ./script/build.ts",
+    "lint": "oxlint --type-aware --ignore-pattern='js/**'",
+    "lint:fix": "oxlint --type-aware --fix --ignore-pattern='js/**'",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "0.94.1",
+    "@types/node": "^25.2.3",
+    "@typescript/native-preview": "7.0.0-dev.20260217.1",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "catalog:"
+  }
+}

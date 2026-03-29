@@ -1,0 +1,26 @@
+{
+  "extends": "@repo/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@hooks/*": ["./src/shared/hooks/*"],
+      "@components/*": ["./src/shared/*"],
+      "@assets/*": ["./src/shared/assets/*"],
+      "@lib/*": ["./src/shared/lib/*"],
+      "@constants/*": ["./src/shared/constants/*"],
+      "@utils/*": ["./src/shared/utils/*"],
+
+      // Internal packages with child path aliases
+      "@repo/design-system/*": ["../../packages/design-system/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "next.config.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts",
+    ".next/types/**/*.ts"
+  ]
+}

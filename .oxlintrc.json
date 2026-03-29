@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "nextjs", "typescript", "unicorn", "jsx-a11y"],
+  "globals": { "Liveblocks": "readonly" },
+  "settings": {
+    "react": { "version": "19.0.0" },
+    "next": { "rootDir": "apps/app/" }
+  },
+  "categories": { "correctness": "warn" },
+  "rules": {
+    "typescript/no-floating-promises": "error",
+    "typescript/no-unsafe-assignment": "warn",
+    "typescript/no-unsafe-call": "warn",
+    "typescript/no-unsafe-member-access": "warn",
+    "typescript/no-unsafe-return": "warn"
+  }
+}

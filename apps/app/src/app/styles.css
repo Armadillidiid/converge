@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import "@repo/design-system/styles/globals.css";
+
+@theme {
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-display);
+}

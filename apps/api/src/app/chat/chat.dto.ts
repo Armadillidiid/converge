@@ -88,6 +88,28 @@ export const pathIdParam = z.object({
   id: z.string(),
 });
 
+export const wsJoinRoomSchema = z.object({
+  roomId: z.string().uuid(),
+});
+
+export const wsLeaveRoomSchema = z.object({
+  roomId: z.string().uuid(),
+});
+
+export const wsSendMessageSchema = z.object({
+  roomId: z.string().uuid(),
+  content: z.string().min(1).max(5000),
+});
+
+export const wsTypingSchema = z.object({
+  roomId: z.string().uuid(),
+});
+
+export type WsJoinRoomInput = z.infer<typeof wsJoinRoomSchema>;
+export type WsLeaveRoomInput = z.infer<typeof wsLeaveRoomSchema>;
+export type WsSendMessageInput = z.infer<typeof wsSendMessageSchema>;
+export type WsTypingInput = z.infer<typeof wsTypingSchema>;
+
 export type RoomDto = z.infer<typeof roomDto>;
 export type RoomWithMembersDto = z.infer<typeof roomWithMembersDto>;
 export type MemberDto = z.infer<typeof roomMemberDto>;

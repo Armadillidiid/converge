@@ -7,27 +7,29 @@ import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
 import { eq, and, desc } from "@repo/database";
 import { schema } from "@repo/database";
 import {
-  roomSchema,
-  roomWithMembersSchema,
-  roomMemberSchema,
-  invitationSchema,
-  messageSchema,
-  paginatedMessagesSchema,
+  roomDto,
+  roomWithMembersDto,
+  roomMemberDto,
+  invitationDto,
+  messageDto,
+  paginatedMessagesDto,
+  type RoomDto,
+  type RoomWithMembersDto,
+  type MemberDto,
+  type InvitationDto,
+  type MessageDto,
+  type PaginatedMessagesDto,
+} from "./chat.dto.js";
+import {
   type CreateRoomInput,
   type CreateMessageInput,
-  type Invitation,
-  type Message,
-  type PaginatedMessages,
-  type Room,
-  type RoomMember,
-  type RoomWithMembers,
 } from "./chat.contract.js";
 
 @Injectable()
 export class ChatService {
   constructor(private readonly drizzle: DrizzleService) {}
 
-  async createRoom(userId: string, data: CreateRoomInput): Promise<Room> {
+  async createRoom(userId: string, data: CreateRoomInput): Promise<RoomDto> {
     const [room] = await this.drizzle.db
       .insert(schema.chatRoom)
       .values({
@@ -46,10 +48,10 @@ export class ChatService {
       role: "owner",
     });
 
-    return roomSchema.parse(room);
+    return roomDto.parse(room);
   }
 
-  async getRooms(userId: string): Promise<Room[]> {
+  async getRooms(userId: string): Promise<RoomDto[]> {
     const members = await this.drizzle.db
       .select()
       .from(schema.chatMember)
@@ -64,13 +66,13 @@ export class ChatService {
 
     return rooms
       .filter((room) => roomIds.includes(room.id))
-      .map((r) => roomSchema.parse(r));
+      .map((r) => roomDto.parse(r));
   }
 
   async getRoom(
     userId: string,
     roomId: string,
-  ): Promise<RoomWithMembers | null> {
+  ): Promise<RoomWithMembersDto | null> {
     const [room] = await this.drizzle.db
       .select()
       .from(schema.chatRoom)
@@ -97,13 +99,13 @@ export class ChatService {
       .innerJoin(schema.user, eq(schema.chatMember.userId, schema.user.id))
       .where(eq(schema.chatMember.roomId, roomId));
 
-    return roomWithMembersSchema.parse({
+    return roomWithMembersDto.parse({
       ...room,
       members,
     });
   }
 
-  async getMembers(roomId: string): Promise<RoomMember[]> {
+  async getMembers(roomId: string): Promise<MemberDto[]> {
     const members = await this.drizzle.db
       .select({
         id: schema.chatMember.id,
@@ -120,14 +122,14 @@ export class ChatService {
       .innerJoin(schema.user, eq(schema.chatMember.userId, schema.user.id))
       .where(eq(schema.chatMember.roomId, roomId));
 
-    return members.map((m) => roomMemberSchema.parse(m));
+    return members.map((m) => roomMemberDto.parse(m));
   }
 
   async inviteMember(
     inviterId: string,
     roomId: string,
     inviteeId: string,
-  ): Promise<Invitation> {
+  ): Promise<InvitationDto> {
     const [room] = await this.drizzle.db
       .select()
       .from(schema.chatRoom)
@@ -159,10 +161,10 @@ export class ChatService {
       throw new Error("Failed to create invitation");
     }
 
-    return invitationSchema.parse(invitation);
+    return invitationDto.parse(invitation);
   }
 
-  async getInvitations(userId: string): Promise<Invitation[]> {
+  async getInvitations(userId: string): Promise<InvitationDto[]> {
     const invitations = await this.drizzle.db
       .select()
       .from(schema.chatInvitation)
@@ -173,13 +175,13 @@ export class ChatService {
         ),
       );
 
-    return invitations.map((i) => invitationSchema.parse(i));
+    return invitations.map((i) => invitationDto.parse(i));
   }
 
   async acceptInvitation(
     userId: string,
     invitationId: string,
-  ): Promise<Invitation> {
+  ): Promise<InvitationDto> {
     const [invitation] = await this.drizzle.db
       .select()
       .from(schema.chatInvitation)
@@ -218,13 +220,13 @@ export class ChatService {
       role: "member",
     });
 
-    return invitationSchema.parse(updatedInvitation);
+    return invitationDto.parse(updatedInvitation);
   }
 
   async declineInvitation(
     userId: string,
     invitationId: string,
-  ): Promise<Invitation> {
+  ): Promise<InvitationDto> {
     const [invitation] = await this.drizzle.db
       .select()
       .from(schema.chatInvitation)
@@ -249,13 +251,13 @@ export class ChatService {
       throw new Error("Failed to decline invitation");
     }
 
-    return invitationSchema.parse(updatedInvitation);
+    return invitationDto.parse(updatedInvitation);
   }
 
   async getMessages(
     roomId: string,
     options: { limit?: number; cursor?: string | undefined },
-  ): Promise<PaginatedMessages> {
+  ): Promise<PaginatedMessagesDto> {
     const limit = options.limit ?? 50;
 
     const messages = await this.drizzle.db
@@ -265,7 +267,7 @@ export class ChatService {
       .orderBy(desc(schema.chatMessage.createdAt))
       .limit(limit);
 
-    return paginatedMessagesSchema.parse({
+    return paginatedMessagesDto.parse({
       items: messages,
       nextCursor:
         messages.length === limit
@@ -278,7 +280,7 @@ export class ChatService {
     senderId: string,
     roomId: string,
     data: CreateMessageInput,
-  ): Promise<Message> {
+  ): Promise<MessageDto> {
     const [message] = await this.drizzle.db
       .insert(schema.chatMessage)
       .values({
@@ -292,7 +294,7 @@ export class ChatService {
       throw new Error("Failed to create message");
     }
 
-    return messageSchema.parse(message);
+    return messageDto.parse(message);
   }
 
   async leaveRoom(userId: string, roomId: string): Promise<void> {

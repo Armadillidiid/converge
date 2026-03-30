@@ -33,8 +33,10 @@ await createClient({
         containerName: "ApiClient",
         methods: "instance",
       },
+      validator: true,
     },
     { name: "@tanstack/react-query" },
+    { name: "zod" },
   ],
 });
 

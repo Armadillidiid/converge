@@ -28,6 +28,32 @@ import type {
   ChatLeaveRoomData,
   ChatLeaveRoomResponses,
 } from "./types.gen";
+import {
+  zChatAcceptInvitationData,
+  zChatAcceptInvitationResponse,
+  zChatCreateMessageData,
+  zChatCreateMessageResponse,
+  zChatCreateRoomData,
+  zChatCreateRoomResponse,
+  zChatDeclineInvitationData,
+  zChatDeclineInvitationResponse,
+  zChatDeleteRoomData,
+  zChatDeleteRoomResponse,
+  zChatGetInvitationsData,
+  zChatGetInvitationsResponse,
+  zChatGetMembersData,
+  zChatGetMembersResponse,
+  zChatGetMessagesData,
+  zChatGetMessagesResponse,
+  zChatGetRoomData,
+  zChatGetRoomResponse,
+  zChatGetRoomsData,
+  zChatGetRoomsResponse,
+  zChatInviteMemberData,
+  zChatInviteMemberResponse,
+  zChatLeaveRoomData,
+  zChatLeaveRoomResponse,
+} from "./zod.gen";
 
 export type Options<
   TData extends TDataShape = TDataShape,
@@ -82,7 +108,14 @@ export class Chat extends HeyApiClient {
       ChatGetRoomsResponses,
       unknown,
       ThrowOnError
-    >({ url: "/chat/rooms", ...options });
+    >({
+      requestValidator: async (data) =>
+        await zChatGetRoomsData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatGetRoomsResponse.parseAsync(data),
+      url: "/chat/rooms",
+      ...options,
+    });
   }
 
   public createRoom<ThrowOnError extends boolean = false>(
@@ -93,6 +126,10 @@ export class Chat extends HeyApiClient {
       unknown,
       ThrowOnError
     >({
+      requestValidator: async (data) =>
+        await zChatCreateRoomData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatCreateRoomResponse.parseAsync(data),
       url: "/chat/rooms",
       ...options,
       headers: {
@@ -110,6 +147,10 @@ export class Chat extends HeyApiClient {
       unknown,
       ThrowOnError
     >({
+      requestValidator: async (data) =>
+        await zChatDeleteRoomData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatDeleteRoomResponse.parseAsync(data),
       url: "/chat/rooms/{id}",
       ...options,
       headers: {
@@ -126,7 +167,13 @@ export class Chat extends HeyApiClient {
       ChatGetRoomResponses,
       unknown,
       ThrowOnError
-    >({ url: "/chat/rooms/{id}", ...options });
+    >({
+      requestValidator: async (data) => await zChatGetRoomData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatGetRoomResponse.parseAsync(data),
+      url: "/chat/rooms/{id}",
+      ...options,
+    });
   }
 
   public getMembers<ThrowOnError extends boolean = false>(
@@ -136,7 +183,14 @@ export class Chat extends HeyApiClient {
       ChatGetMembersResponses,
       unknown,
       ThrowOnError
-    >({ url: "/chat/rooms/{id}/members", ...options });
+    >({
+      requestValidator: async (data) =>
+        await zChatGetMembersData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatGetMembersResponse.parseAsync(data),
+      url: "/chat/rooms/{id}/members",
+      ...options,
+    });
   }
 
   public getMessages<ThrowOnError extends boolean = false>(
@@ -146,7 +200,14 @@ export class Chat extends HeyApiClient {
       ChatGetMessagesResponses,
       unknown,
       ThrowOnError
-    >({ url: "/chat/rooms/{id}/messages", ...options });
+    >({
+      requestValidator: async (data) =>
+        await zChatGetMessagesData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatGetMessagesResponse.parseAsync(data),
+      url: "/chat/rooms/{id}/messages",
+      ...options,
+    });
   }
 
   public createMessage<ThrowOnError extends boolean = false>(
@@ -157,6 +218,10 @@ export class Chat extends HeyApiClient {
       unknown,
       ThrowOnError
     >({
+      requestValidator: async (data) =>
+        await zChatCreateMessageData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatCreateMessageResponse.parseAsync(data),
       url: "/chat/rooms/{id}/messages",
       ...options,
       headers: {
@@ -174,6 +239,10 @@ export class Chat extends HeyApiClient {
       unknown,
       ThrowOnError
     >({
+      requestValidator: async (data) =>
+        await zChatInviteMemberData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatInviteMemberResponse.parseAsync(data),
       url: "/chat/rooms/{id}/invite",
       ...options,
       headers: {
@@ -190,7 +259,14 @@ export class Chat extends HeyApiClient {
       ChatGetInvitationsResponses,
       unknown,
       ThrowOnError
-    >({ url: "/chat/invitations", ...options });
+    >({
+      requestValidator: async (data) =>
+        await zChatGetInvitationsData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatGetInvitationsResponse.parseAsync(data),
+      url: "/chat/invitations",
+      ...options,
+    });
   }
 
   public acceptInvitation<ThrowOnError extends boolean = false>(
@@ -201,6 +277,10 @@ export class Chat extends HeyApiClient {
       unknown,
       ThrowOnError
     >({
+      requestValidator: async (data) =>
+        await zChatAcceptInvitationData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatAcceptInvitationResponse.parseAsync(data),
       url: "/chat/invitations/{id}/accept",
       ...options,
       headers: {
@@ -218,6 +298,10 @@ export class Chat extends HeyApiClient {
       unknown,
       ThrowOnError
     >({
+      requestValidator: async (data) =>
+        await zChatDeclineInvitationData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatDeclineInvitationResponse.parseAsync(data),
       url: "/chat/invitations/{id}/decline",
       ...options,
       headers: {
@@ -235,6 +319,10 @@ export class Chat extends HeyApiClient {
       unknown,
       ThrowOnError
     >({
+      requestValidator: async (data) =>
+        await zChatLeaveRoomData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatLeaveRoomResponse.parseAsync(data),
       url: "/chat/rooms/{id}/leave",
       ...options,
       headers: {

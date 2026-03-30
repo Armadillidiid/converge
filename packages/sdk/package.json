@@ -23,6 +23,7 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "@tanstack/react-query": "catalog:"
+    "@tanstack/react-query": "catalog:",
+    "zod": "catalog:"
   }
 }

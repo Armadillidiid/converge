@@ -8,7 +8,7 @@ import {
 } from "@nestjs/websockets";
 import { Injectable, Logger, UseGuards } from "@nestjs/common";
 import type { Server, Socket } from "socket.io";
-import { AuthGuard } from "#src/modules/better-auth/guards/auth.guard.js";
+import { SocketIOAuthGuard } from "#src/modules/better-auth/guards/socket-io-auth.guard.js";
 import type { UserSession } from "#src/modules/better-auth/guards/auth.guard.js";
 import { ChatService } from "./chat.service.js";
 import { ChatPresenceService } from "./chat-presence.service.js";
@@ -27,7 +27,7 @@ interface AuthenticatedSocket extends Socket {
   cors: { origin: "*" },
   namespace: "/chat",
 })
-@UseGuards(AuthGuard)
+@UseGuards(SocketIOAuthGuard)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;

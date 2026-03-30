@@ -3,7 +3,6 @@ import {
   NotFoundException,
   ForbiddenException,
 } from "@nestjs/common";
-import { z } from "zod";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
 import { eq, and, desc } from "@repo/database";
 import { schema } from "@repo/database";
@@ -16,14 +15,13 @@ import {
   paginatedMessagesSchema,
   type CreateRoomInput,
   type CreateMessageInput,
+  type Invitation,
+  type Message,
+  type PaginatedMessages,
+  type Room,
+  type RoomMember,
+  type RoomWithMembers,
 } from "./chat.contract.js";
-
-export type Room = z.infer<typeof roomSchema>;
-export type RoomWithMembers = z.infer<typeof roomWithMembersSchema>;
-export type RoomMember = z.infer<typeof roomMemberSchema>;
-export type Invitation = z.infer<typeof invitationSchema>;
-export type Message = z.infer<typeof messageSchema>;
-export type PaginatedMessages = z.infer<typeof paginatedMessagesSchema>;
 
 @Injectable()
 export class ChatService {

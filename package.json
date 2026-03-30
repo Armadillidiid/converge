@@ -22,8 +22,6 @@
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "analyze": "turbo analyze",
-    "bump-deps": "pnpx npm-check-updates --deep -u -x recharts && pnpm install",
-    "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset tag",
     "prepare": "husky"
@@ -38,7 +36,6 @@
     "oxfmt": "latest",
     "oxlint": "latest",
     "oxlint-tsgolint": "latest",
-    "tsup": "^8.5.1",
     "turbo": "^2.8.13",
     "typescript": "catalog:",
     "vitest": "catalog:"

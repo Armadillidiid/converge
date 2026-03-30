@@ -13,10 +13,7 @@ export class ZodValidationPipe implements PipeTransform {
   ) {}
 
   transform(value: unknown, metadata: ArgumentMetadata): unknown {
-    const validateCustomDecorators =
-      this.options?.validateCustomDecorators || false;
-
-    if (metadata.type === "custom" && !validateCustomDecorators) {
+    if (metadata.type !== "body") {
       return value;
     }
 

@@ -1,6 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from "@nestjs/common";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
-import { eq } from "@repo/database";
+import { eq, and } from "@repo/database";
 import { schema } from "@repo/database";
 
 export interface CreateRoomInput {
@@ -27,6 +31,16 @@ export interface RoomWithMembers extends Room {
       email: string;
     };
   }>;
+}
+
+export interface Invitation {
+  id: string;
+  roomId: string;
+  inviterId: string;
+  inviteeId: string;
+  status: string;
+  expiresAt: Date;
+  createdAt: Date;
 }
 
 @Injectable()
@@ -133,5 +147,134 @@ export class ChatService {
       .where(eq(schema.chatMember.roomId, roomId));
 
     return members;
+  }
+
+  async inviteMember(
+    inviterId: string,
+    roomId: string,
+    inviteeId: string,
+  ): Promise<Invitation> {
+    const [room] = await this.drizzle.db
+      .select()
+      .from(schema.chatRoom)
+      .where(eq(schema.chatRoom.id, roomId))
+      .limit(1);
+
+    if (!room) {
+      throw new NotFoundException("Room not found");
+    }
+
+    if (room.ownerId !== inviterId) {
+      throw new ForbiddenException("Only room owner can invite members");
+    }
+
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const [invitation] = await this.drizzle.db
+      .insert(schema.chatInvitation)
+      .values({
+        roomId,
+        inviterId,
+        inviteeId,
+        status: "pending",
+        expiresAt,
+      })
+      .returning();
+
+    if (!invitation) {
+      throw new Error("Failed to create invitation");
+    }
+
+    return invitation;
+  }
+
+  async getInvitations(userId: string): Promise<Invitation[]> {
+    const invitations = await this.drizzle.db
+      .select()
+      .from(schema.chatInvitation)
+      .where(
+        and(
+          eq(schema.chatInvitation.inviteeId, userId),
+          eq(schema.chatInvitation.status, "pending"),
+        ),
+      );
+
+    return invitations;
+  }
+
+  async acceptInvitation(
+    userId: string,
+    invitationId: string,
+  ): Promise<Invitation> {
+    const [invitation] = await this.drizzle.db
+      .select()
+      .from(schema.chatInvitation)
+      .where(eq(schema.chatInvitation.id, invitationId))
+      .limit(1);
+
+    if (!invitation) {
+      throw new NotFoundException("Invitation not found");
+    }
+
+    if (invitation.inviteeId !== userId) {
+      throw new ForbiddenException("You are not the invitee");
+    }
+
+    if (invitation.status !== "pending") {
+      throw new ForbiddenException("Invitation is no longer pending");
+    }
+
+    if (new Date() > invitation.expiresAt) {
+      throw new ForbiddenException("Invitation has expired");
+    }
+
+    const [updatedInvitation] = await this.drizzle.db
+      .update(schema.chatInvitation)
+      .set({ status: "accepted" })
+      .where(eq(schema.chatInvitation.id, invitationId))
+      .returning();
+
+    if (!updatedInvitation) {
+      throw new Error("Failed to update invitation");
+    }
+
+    await this.drizzle.db.insert(schema.chatMember).values({
+      roomId: invitation.roomId,
+      userId: userId,
+      role: "member",
+    });
+
+    return updatedInvitation;
+  }
+
+  async declineInvitation(
+    userId: string,
+    invitationId: string,
+  ): Promise<Invitation> {
+    const [invitation] = await this.drizzle.db
+      .select()
+      .from(schema.chatInvitation)
+      .where(eq(schema.chatInvitation.id, invitationId))
+      .limit(1);
+
+    if (!invitation) {
+      throw new NotFoundException("Invitation not found");
+    }
+
+    if (invitation.inviteeId !== userId) {
+      throw new ForbiddenException("You are not the invitee");
+    }
+
+    const [updatedInvitation] = await this.drizzle.db
+      .update(schema.chatInvitation)
+      .set({ status: "declined" })
+      .where(eq(schema.chatInvitation.id, invitationId))
+      .returning();
+
+    if (!updatedInvitation) {
+      throw new Error("Failed to decline invitation");
+    }
+
+    return updatedInvitation;
   }
 }

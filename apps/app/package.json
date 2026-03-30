@@ -28,6 +28,7 @@
     "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "date-fns": "catalog:",
     "embla-carousel-autoplay": "catalog:",
     "fuse.js": "^7.1.0",
     "import-in-the-middle": "^2.0.0",
@@ -39,6 +40,7 @@
     "react-dom": "catalog:",
     "react-qr-code": "^2.0.18",
     "require-in-the-middle": "8.0.1",
+    "socket.io-client": "^4.8.3",
     "zod": "catalog:"
   },
   "devDependencies": {

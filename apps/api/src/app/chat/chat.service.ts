@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import type { NodePgDatabase } from "@repo/database";
-import { schema, eq } from "@repo/database";
+import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
+import { eq } from "@repo/database";
+import { schema } from "@repo/database";
 
 export interface CreateRoomInput {
   name: string;
@@ -14,12 +15,26 @@ export interface Room {
   updatedAt: Date;
 }
 
+export interface RoomWithMembers extends Room {
+  members: Array<{
+    id: string;
+    userId: string;
+    role: string;
+    joinedAt: Date;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  }>;
+}
+
 @Injectable()
 export class ChatService {
-  constructor(private readonly db: NodePgDatabase<typeof schema>) {}
+  constructor(private readonly drizzle: DrizzleService) {}
 
   async createRoom(userId: string, data: CreateRoomInput): Promise<Room> {
-    const [room] = await this.db
+    const [room] = await this.drizzle.db
       .insert(schema.chatRoom)
       .values({
         name: data.name,
@@ -31,7 +46,7 @@ export class ChatService {
       throw new Error("Failed to create room");
     }
 
-    await this.db.insert(schema.chatMember).values({
+    await this.drizzle.db.insert(schema.chatMember).values({
       roomId: room.id,
       userId: userId,
       role: "owner",
@@ -41,21 +56,82 @@ export class ChatService {
   }
 
   async getRooms(userId: string): Promise<Room[]> {
-    // Query: Get all room IDs where user is a member
-    const members = await this.db
+    const members = await this.drizzle.db
       .select()
       .from(schema.chatMember)
-      .where(eq(schema.chatMember.userId, userId))
+      .where(eq(schema.chatMember.userId, userId));
 
     if (members.length === 0) {
       return [];
     }
 
-    // Query: Get the actual rooms
     const roomIds = members.map((m) => m.roomId);
-    const rooms = await this.db.select().from(schema.chatRoom);
+    const rooms = await this.drizzle.db.select().from(schema.chatRoom);
 
-    // Filter to only rooms the user is a member of
     return rooms.filter((room) => roomIds.includes(room.id));
+  }
+
+  async getRoom(
+    userId: string,
+    roomId: string,
+  ): Promise<RoomWithMembers | null> {
+    const [room] = await this.drizzle.db
+      .select()
+      .from(schema.chatRoom)
+      .where(eq(schema.chatRoom.id, roomId))
+      .limit(1);
+
+    if (!room) {
+      return null;
+    }
+
+    const members = await this.drizzle.db
+      .select({
+        id: schema.chatMember.id,
+        userId: schema.chatMember.userId,
+        role: schema.chatMember.role,
+        joinedAt: schema.chatMember.joinedAt,
+        user: {
+          id: schema.user.id,
+          name: schema.user.name,
+          email: schema.user.email,
+        },
+      })
+      .from(schema.chatMember)
+      .innerJoin(schema.user, eq(schema.chatMember.userId, schema.user.id))
+      .where(eq(schema.chatMember.roomId, roomId));
+
+    return {
+      ...room,
+      members,
+    };
+  }
+
+  async getMembers(roomId: string): Promise<
+    Array<{
+      id: string;
+      userId: string;
+      role: string;
+      joinedAt: Date;
+      user: { id: string; name: string; email: string };
+    }>
+  > {
+    const members = await this.drizzle.db
+      .select({
+        id: schema.chatMember.id,
+        userId: schema.chatMember.userId,
+        role: schema.chatMember.role,
+        joinedAt: schema.chatMember.joinedAt,
+        user: {
+          id: schema.user.id,
+          name: schema.user.name,
+          email: schema.user.email,
+        },
+      })
+      .from(schema.chatMember)
+      .innerJoin(schema.user, eq(schema.chatMember.userId, schema.user.id))
+      .where(eq(schema.chatMember.roomId, roomId));
+
+    return members;
   }
 }

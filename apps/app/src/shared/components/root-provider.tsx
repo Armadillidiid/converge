@@ -23,7 +23,7 @@ const RootProviders = ({ children }: { children: ReactNode }) => {
 
   return (
     <AnalyticsProvider>
-      <DesignSystemProvider forcedTheme="dark">
+      <DesignSystemProvider forcedTheme="light">
         <QueryClientProvider client={queryClient}>
           <Suspense>
             <PageView />

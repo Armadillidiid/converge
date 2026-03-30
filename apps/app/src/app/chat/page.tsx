@@ -5,13 +5,13 @@ import { readAuthTokenFromServerCookies } from "@/shared/lib/auth-token-cookie.s
 
 export default async function ChatPage() {
   const token = await readAuthTokenFromServerCookies();
-  const session = await auth.getSession({
+  const { data: session } = await auth.getSession({
     fetchOptions: {
       auth: { type: "Bearer", token },
     },
   });
+
   if (!session) {
-    console.log("SESSION", session);
     redirect("/auth/sign-in", RedirectType.replace);
   }
 

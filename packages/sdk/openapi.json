@@ -10,29 +10,105 @@
   ],
   "openapi": "3.1.1",
   "paths": {
-    "/": {
+    "/chat/rooms": {
+      "post": {
+        "operationId": "chat.createRoom",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "ownerId": {
+                      "type": "string"
+                    },
+                    "createdAt": {},
+                    "updatedAt": {}
+                  },
+                  "required": ["id", "name", "ownerId"]
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
-        "operationId": "api",
+        "operationId": "chat.getRooms",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "ownerId": {
+                            "type": "string"
+                          },
+                          "createdAt": {},
+                          "updatedAt": {}
+                        },
+                        "required": ["id", "name", "ownerId"]
+                      }
+                    }
+                  },
+                  "required": ["items"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}": {
+      "get": {
+        "operationId": "chat.getRoom",
         "parameters": [
           {
-            "name": "firstName",
-            "in": "query",
+            "name": "id",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          },
-          {
-            "name": "lastName",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
+            }
           }
         ],
         "responses": {
@@ -43,11 +119,96 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "fullName": {
+                    "id": {
                       "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "ownerId": {
+                      "type": "string"
+                    },
+                    "createdAt": {},
+                    "updatedAt": {},
+                    "members": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "userId": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "enum": ["owner", "member"]
+                          },
+                          "joinedAt": {},
+                          "user": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "email": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["id", "name", "email"]
+                          }
+                        },
+                        "required": ["id", "userId", "role", "user"]
+                      }
                     }
                   },
-                  "required": ["fullName"]
+                  "required": ["id", "name", "ownerId", "members"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "chat.deleteRoom",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["success"]
                 }
               }
             }
@@ -55,62 +216,101 @@
         }
       }
     },
-    "/listings": {
+    "/chat/rooms/{id}/members": {
       "get": {
-        "operationId": "listings.list",
+        "operationId": "chat.getMembers",
         "parameters": [
           {
-            "name": "page",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "userId": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "enum": ["owner", "member"]
+                          },
+                          "joinedAt": {},
+                          "user": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "email": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["id", "name", "email"]
+                          }
+                        },
+                        "required": ["id", "userId", "role", "user"]
+                      }
+                    }
+                  },
+                  "required": ["items"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}/messages": {
+      "get": {
+        "operationId": "chat.getMessages",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
             "in": "query",
+            "required": false,
             "schema": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 9007199254740991,
-              "default": 1
+              "maximum": 100
             },
             "allowEmptyValue": true,
             "allowReserved": true
           },
           {
-            "name": "pageSize",
+            "name": "cursor",
             "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 50,
-              "default": 20
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          },
-          {
-            "name": "city",
-            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          },
-          {
-            "name": "propertyType",
-            "in": "query",
-            "schema": {
-              "enum": ["apartment", "house", "land", "commercial"]
-            },
-            "style": "deepObject",
-            "explode": true,
-            "allowEmptyValue": true,
-            "allowReserved": true
-          },
-          {
-            "name": "listingType",
-            "in": "query",
-            "schema": {
-              "enum": ["rent", "sale"]
-            },
-            "style": "deepObject",
-            "explode": true,
             "allowEmptyValue": true,
             "allowReserved": true
           }
@@ -131,141 +331,61 @@
                           "id": {
                             "type": "string"
                           },
-                          "title": {
+                          "roomId": {
                             "type": "string"
                           },
-                          "description": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "price": {
-                            "type": "number"
-                          },
-                          "city": {
+                          "senderId": {
                             "type": "string"
                           },
-                          "state": {
+                          "content": {
                             "type": "string"
                           },
-                          "propertyType": {
-                            "enum": ["apartment", "house", "land", "commercial"]
-                          },
-                          "listingType": {
-                            "enum": ["rent", "sale"]
-                          },
-                          "bedrooms": {
-                            "anyOf": [
-                              {
-                                "type": "integer",
-                                "minimum": -9007199254740991,
-                                "maximum": 9007199254740991
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "bathrooms": {
-                            "anyOf": [
-                              {
-                                "type": "integer",
-                                "minimum": -9007199254740991,
-                                "maximum": 9007199254740991
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "images": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "status": {
-                            "enum": ["active", "inactive"]
-                          },
-                          "createdAt": {
-                            "type": "string"
-                          },
-                          "updatedAt": {
-                            "type": "string"
-                          },
-                          "agentId": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
+                          "createdAt": {}
                         },
-                        "required": [
-                          "id",
-                          "title",
-                          "description",
-                          "price",
-                          "city",
-                          "state",
-                          "propertyType",
-                          "listingType",
-                          "bedrooms",
-                          "bathrooms",
-                          "images",
-                          "status",
-                          "createdAt",
-                          "updatedAt",
-                          "agentId"
-                        ]
+                        "required": ["id", "roomId", "senderId", "content"]
                       }
                     },
-                    "total": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "page": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "pageSize": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
+                    "nextCursor": {
+                      "type": "string"
                     }
                   },
-                  "required": ["items", "total", "page", "pageSize"]
+                  "required": ["items"]
                 }
               }
             }
           }
         }
-      }
-    },
-    "/listings/{id}": {
-      "get": {
-        "operationId": "listings.getById",
+      },
+      "post": {
+        "operationId": "chat.createMessage",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "minLength": 1
+              "type": "string"
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 5000
+                  }
+                },
+                "required": ["content"]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -277,101 +397,316 @@
                     "id": {
                       "type": "string"
                     },
-                    "title": {
+                    "roomId": {
                       "type": "string"
                     },
-                    "description": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "price": {
-                      "type": "number"
-                    },
-                    "city": {
+                    "senderId": {
                       "type": "string"
                     },
-                    "state": {
+                    "content": {
                       "type": "string"
                     },
-                    "propertyType": {
-                      "enum": ["apartment", "house", "land", "commercial"]
+                    "createdAt": {}
+                  },
+                  "required": ["id", "roomId", "senderId", "content"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}/invite": {
+      "post": {
+        "operationId": "chat.inviteMember",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inviteeId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["inviteeId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
                     },
-                    "listingType": {
-                      "enum": ["rent", "sale"]
+                    "roomId": {
+                      "type": "string"
                     },
-                    "bedrooms": {
-                      "anyOf": [
-                        {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
+                    "inviterId": {
+                      "type": "string"
                     },
-                    "bathrooms": {
-                      "anyOf": [
-                        {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "images": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
+                    "inviteeId": {
+                      "type": "string"
                     },
                     "status": {
-                      "enum": ["active", "inactive"]
+                      "enum": ["pending", "accepted", "declined"]
                     },
-                    "createdAt": {
-                      "type": "string"
-                    },
-                    "updatedAt": {
-                      "type": "string"
-                    },
-                    "agentId": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    }
+                    "expiresAt": {},
+                    "createdAt": {}
                   },
                   "required": [
                     "id",
-                    "title",
-                    "description",
-                    "price",
-                    "city",
-                    "state",
-                    "propertyType",
-                    "listingType",
-                    "bedrooms",
-                    "bathrooms",
-                    "images",
-                    "status",
-                    "createdAt",
-                    "updatedAt",
-                    "agentId"
+                    "roomId",
+                    "inviterId",
+                    "inviteeId",
+                    "status"
                   ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/invitations": {
+      "get": {
+        "operationId": "chat.getInvitations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "roomId": {
+                            "type": "string"
+                          },
+                          "inviterId": {
+                            "type": "string"
+                          },
+                          "inviteeId": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "enum": ["pending", "accepted", "declined"]
+                          },
+                          "expiresAt": {},
+                          "createdAt": {}
+                        },
+                        "required": [
+                          "id",
+                          "roomId",
+                          "inviterId",
+                          "inviteeId",
+                          "status"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["items"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/invitations/{id}/accept": {
+      "post": {
+        "operationId": "chat.acceptInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "roomId": {
+                      "type": "string"
+                    },
+                    "inviterId": {
+                      "type": "string"
+                    },
+                    "inviteeId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": ["pending", "accepted", "declined"]
+                    },
+                    "expiresAt": {},
+                    "createdAt": {}
+                  },
+                  "required": [
+                    "id",
+                    "roomId",
+                    "inviterId",
+                    "inviteeId",
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/invitations/{id}/decline": {
+      "post": {
+        "operationId": "chat.declineInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "roomId": {
+                      "type": "string"
+                    },
+                    "inviterId": {
+                      "type": "string"
+                    },
+                    "inviteeId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": ["pending", "accepted", "declined"]
+                    },
+                    "expiresAt": {},
+                    "createdAt": {}
+                  },
+                  "required": [
+                    "id",
+                    "roomId",
+                    "inviterId",
+                    "inviteeId",
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}/leave": {
+      "post": {
+        "operationId": "chat.leaveRoom",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["success"]
                 }
               }
             }

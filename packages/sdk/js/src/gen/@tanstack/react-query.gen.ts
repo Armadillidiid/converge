@@ -5,17 +5,36 @@ import {
   type InfiniteData,
   infiniteQueryOptions,
   queryOptions,
+  type UseMutationOptions,
 } from "@tanstack/react-query";
 
 import { client } from "../client.gen";
 import { ApiClient, type Options } from "../sdk.gen";
 import type {
-  ApiData,
-  ApiResponse,
-  ListingsGetByIdData,
-  ListingsGetByIdResponse,
-  ListingsListData,
-  ListingsListResponse,
+  ChatAcceptInvitationData,
+  ChatAcceptInvitationResponse,
+  ChatCreateMessageData,
+  ChatCreateMessageResponse,
+  ChatCreateRoomData,
+  ChatCreateRoomResponse,
+  ChatDeclineInvitationData,
+  ChatDeclineInvitationResponse,
+  ChatDeleteRoomData,
+  ChatDeleteRoomResponse,
+  ChatGetInvitationsData,
+  ChatGetInvitationsResponse,
+  ChatGetMembersData,
+  ChatGetMembersResponse,
+  ChatGetMessagesData,
+  ChatGetMessagesResponse,
+  ChatGetRoomData,
+  ChatGetRoomResponse,
+  ChatGetRoomsData,
+  ChatGetRoomsResponse,
+  ChatInviteMemberData,
+  ChatInviteMemberResponse,
+  ChatLeaveRoomData,
+  ChatLeaveRoomResponse,
 } from "../types.gen";
 
 export type QueryKey<TOptions extends Options> = [
@@ -58,18 +77,18 @@ const createQueryKey = <TOptions extends Options>(
   return [params];
 };
 
-export const apiQueryKey = (options: Options<ApiData>) =>
-  createQueryKey("api", options);
+export const chatGetRoomsQueryKey = (options?: Options<ChatGetRoomsData>) =>
+  createQueryKey("chatGetRooms", options);
 
-export const apiOptions = (options: Options<ApiData>) =>
+export const chatGetRoomsOptions = (options?: Options<ChatGetRoomsData>) =>
   queryOptions<
-    ApiResponse,
+    ChatGetRoomsResponse,
     DefaultError,
-    ApiResponse,
-    ReturnType<typeof apiQueryKey>
+    ChatGetRoomsResponse,
+    ReturnType<typeof chatGetRoomsQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await ApiClient.__registry.get().api({
+      const { data } = await ApiClient.__registry.get().chat.getRooms({
         ...options,
         ...queryKey[0],
         signal,
@@ -77,21 +96,69 @@ export const apiOptions = (options: Options<ApiData>) =>
       });
       return data;
     },
-    queryKey: apiQueryKey(options),
+    queryKey: chatGetRoomsQueryKey(options),
   });
 
-export const listingsListQueryKey = (options?: Options<ListingsListData>) =>
-  createQueryKey("listingsList", options);
-
-export const listingsListOptions = (options?: Options<ListingsListData>) =>
-  queryOptions<
-    ListingsListResponse,
+export const chatCreateRoomMutation = (
+  options?: Partial<Options<ChatCreateRoomData>>,
+): UseMutationOptions<
+  ChatCreateRoomResponse,
+  DefaultError,
+  Options<ChatCreateRoomData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChatCreateRoomResponse,
     DefaultError,
-    ListingsListResponse,
-    ReturnType<typeof listingsListQueryKey>
+    Options<ChatCreateRoomData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await ApiClient.__registry.get().chat.createRoom({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const chatDeleteRoomMutation = (
+  options?: Partial<Options<ChatDeleteRoomData>>,
+): UseMutationOptions<
+  ChatDeleteRoomResponse,
+  DefaultError,
+  Options<ChatDeleteRoomData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChatDeleteRoomResponse,
+    DefaultError,
+    Options<ChatDeleteRoomData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await ApiClient.__registry.get().chat.deleteRoom({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const chatGetRoomQueryKey = (options: Options<ChatGetRoomData>) =>
+  createQueryKey("chatGetRoom", options);
+
+export const chatGetRoomOptions = (options: Options<ChatGetRoomData>) =>
+  queryOptions<
+    ChatGetRoomResponse,
+    DefaultError,
+    ChatGetRoomResponse,
+    ReturnType<typeof chatGetRoomQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await ApiClient.__registry.get().listings.list({
+      const { data } = await ApiClient.__registry.get().chat.getRoom({
         ...options,
         ...queryKey[0],
         signal,
@@ -99,7 +166,52 @@ export const listingsListOptions = (options?: Options<ListingsListData>) =>
       });
       return data;
     },
-    queryKey: listingsListQueryKey(options),
+    queryKey: chatGetRoomQueryKey(options),
+  });
+
+export const chatGetMembersQueryKey = (options: Options<ChatGetMembersData>) =>
+  createQueryKey("chatGetMembers", options);
+
+export const chatGetMembersOptions = (options: Options<ChatGetMembersData>) =>
+  queryOptions<
+    ChatGetMembersResponse,
+    DefaultError,
+    ChatGetMembersResponse,
+    ReturnType<typeof chatGetMembersQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await ApiClient.__registry.get().chat.getMembers({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: chatGetMembersQueryKey(options),
+  });
+
+export const chatGetMessagesQueryKey = (
+  options: Options<ChatGetMessagesData>,
+) => createQueryKey("chatGetMessages", options);
+
+export const chatGetMessagesOptions = (options: Options<ChatGetMessagesData>) =>
+  queryOptions<
+    ChatGetMessagesResponse,
+    DefaultError,
+    ChatGetMessagesResponse,
+    ReturnType<typeof chatGetMessagesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await ApiClient.__registry.get().chat.getMessages({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: chatGetMessagesQueryKey(options),
   });
 
 const createInfiniteParams = <
@@ -136,22 +248,22 @@ const createInfiniteParams = <
   return params as unknown as typeof page;
 };
 
-export const listingsListInfiniteQueryKey = (
-  options?: Options<ListingsListData>,
-): QueryKey<Options<ListingsListData>> =>
-  createQueryKey("listingsList", options, true);
+export const chatGetMessagesInfiniteQueryKey = (
+  options: Options<ChatGetMessagesData>,
+): QueryKey<Options<ChatGetMessagesData>> =>
+  createQueryKey("chatGetMessages", options, true);
 
-export const listingsListInfiniteOptions = (
-  options?: Options<ListingsListData>,
+export const chatGetMessagesInfiniteOptions = (
+  options: Options<ChatGetMessagesData>,
 ) =>
   infiniteQueryOptions<
-    ListingsListResponse,
+    ChatGetMessagesResponse,
     DefaultError,
-    InfiniteData<ListingsListResponse>,
-    QueryKey<Options<ListingsListData>>,
-    | number
+    InfiniteData<ChatGetMessagesResponse>,
+    QueryKey<Options<ChatGetMessagesData>>,
+    | string
     | Pick<
-        QueryKey<Options<ListingsListData>>[0],
+        QueryKey<Options<ChatGetMessagesData>>[0],
         "body" | "headers" | "path" | "query"
       >
   >(
@@ -160,18 +272,18 @@ export const listingsListInfiniteOptions = (
       queryFn: async ({ pageParam, queryKey, signal }) => {
         // @ts-ignore
         const page: Pick<
-          QueryKey<Options<ListingsListData>>[0],
+          QueryKey<Options<ChatGetMessagesData>>[0],
           "body" | "headers" | "path" | "query"
         > =
           typeof pageParam === "object"
             ? pageParam
             : {
                 query: {
-                  page: pageParam,
+                  cursor: pageParam,
                 },
               };
         const params = createInfiniteParams(queryKey, page);
-        const { data } = await ApiClient.__registry.get().listings.list({
+        const { data } = await ApiClient.__registry.get().chat.getMessages({
           ...options,
           ...params,
           signal,
@@ -179,23 +291,73 @@ export const listingsListInfiniteOptions = (
         });
         return data;
       },
-      queryKey: listingsListInfiniteQueryKey(options),
+      queryKey: chatGetMessagesInfiniteQueryKey(options),
     },
   );
 
-export const listingsGetByIdQueryKey = (
-  options: Options<ListingsGetByIdData>,
-) => createQueryKey("listingsGetById", options);
-
-export const listingsGetByIdOptions = (options: Options<ListingsGetByIdData>) =>
-  queryOptions<
-    ListingsGetByIdResponse,
+export const chatCreateMessageMutation = (
+  options?: Partial<Options<ChatCreateMessageData>>,
+): UseMutationOptions<
+  ChatCreateMessageResponse,
+  DefaultError,
+  Options<ChatCreateMessageData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChatCreateMessageResponse,
     DefaultError,
-    ListingsGetByIdResponse,
-    ReturnType<typeof listingsGetByIdQueryKey>
+    Options<ChatCreateMessageData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await ApiClient.__registry.get().chat.createMessage({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const chatInviteMemberMutation = (
+  options?: Partial<Options<ChatInviteMemberData>>,
+): UseMutationOptions<
+  ChatInviteMemberResponse,
+  DefaultError,
+  Options<ChatInviteMemberData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChatInviteMemberResponse,
+    DefaultError,
+    Options<ChatInviteMemberData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await ApiClient.__registry.get().chat.inviteMember({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const chatGetInvitationsQueryKey = (
+  options?: Options<ChatGetInvitationsData>,
+) => createQueryKey("chatGetInvitations", options);
+
+export const chatGetInvitationsOptions = (
+  options?: Options<ChatGetInvitationsData>,
+) =>
+  queryOptions<
+    ChatGetInvitationsResponse,
+    DefaultError,
+    ChatGetInvitationsResponse,
+    ReturnType<typeof chatGetInvitationsQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await ApiClient.__registry.get().listings.getById({
+      const { data } = await ApiClient.__registry.get().chat.getInvitations({
         ...options,
         ...queryKey[0],
         signal,
@@ -203,5 +365,77 @@ export const listingsGetByIdOptions = (options: Options<ListingsGetByIdData>) =>
       });
       return data;
     },
-    queryKey: listingsGetByIdQueryKey(options),
+    queryKey: chatGetInvitationsQueryKey(options),
   });
+
+export const chatAcceptInvitationMutation = (
+  options?: Partial<Options<ChatAcceptInvitationData>>,
+): UseMutationOptions<
+  ChatAcceptInvitationResponse,
+  DefaultError,
+  Options<ChatAcceptInvitationData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChatAcceptInvitationResponse,
+    DefaultError,
+    Options<ChatAcceptInvitationData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await ApiClient.__registry.get().chat.acceptInvitation({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const chatDeclineInvitationMutation = (
+  options?: Partial<Options<ChatDeclineInvitationData>>,
+): UseMutationOptions<
+  ChatDeclineInvitationResponse,
+  DefaultError,
+  Options<ChatDeclineInvitationData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChatDeclineInvitationResponse,
+    DefaultError,
+    Options<ChatDeclineInvitationData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await ApiClient.__registry.get().chat.declineInvitation({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const chatLeaveRoomMutation = (
+  options?: Partial<Options<ChatLeaveRoomData>>,
+): UseMutationOptions<
+  ChatLeaveRoomResponse,
+  DefaultError,
+  Options<ChatLeaveRoomData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChatLeaveRoomResponse,
+    DefaultError,
+    Options<ChatLeaveRoomData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await ApiClient.__registry.get().chat.leaveRoom({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};

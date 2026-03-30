@@ -3,12 +3,30 @@
 import type { Client, Options as Options2, TDataShape } from "./client";
 import { client } from "./client.gen";
 import type {
-  ApiData,
-  ApiResponses,
-  ListingsGetByIdData,
-  ListingsGetByIdResponses,
-  ListingsListData,
-  ListingsListResponses,
+  ChatAcceptInvitationData,
+  ChatAcceptInvitationResponses,
+  ChatCreateMessageData,
+  ChatCreateMessageResponses,
+  ChatCreateRoomData,
+  ChatCreateRoomResponses,
+  ChatDeclineInvitationData,
+  ChatDeclineInvitationResponses,
+  ChatDeleteRoomData,
+  ChatDeleteRoomResponses,
+  ChatGetInvitationsData,
+  ChatGetInvitationsResponses,
+  ChatGetMembersData,
+  ChatGetMembersResponses,
+  ChatGetMessagesData,
+  ChatGetMessagesResponses,
+  ChatGetRoomData,
+  ChatGetRoomResponses,
+  ChatGetRoomsData,
+  ChatGetRoomsResponses,
+  ChatInviteMemberData,
+  ChatInviteMemberResponses,
+  ChatLeaveRoomData,
+  ChatLeaveRoomResponses,
 } from "./types.gen";
 
 export type Options<
@@ -56,25 +74,174 @@ class HeyApiRegistry<T> {
   }
 }
 
-export class Listings extends HeyApiClient {
-  public list<ThrowOnError extends boolean = false>(
-    options?: Options<ListingsListData, ThrowOnError>,
+export class Chat extends HeyApiClient {
+  public getRooms<ThrowOnError extends boolean = false>(
+    options?: Options<ChatGetRoomsData, ThrowOnError>,
   ) {
     return (options?.client ?? this.client).get<
-      ListingsListResponses,
+      ChatGetRoomsResponses,
       unknown,
       ThrowOnError
-    >({ url: "/listings", ...options });
+    >({ url: "/chat/rooms", ...options });
   }
 
-  public getById<ThrowOnError extends boolean = false>(
-    options: Options<ListingsGetByIdData, ThrowOnError>,
+  public createRoom<ThrowOnError extends boolean = false>(
+    options: Options<ChatCreateRoomData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
-      ListingsGetByIdResponses,
+    return (options.client ?? this.client).post<
+      ChatCreateRoomResponses,
       unknown,
       ThrowOnError
-    >({ url: "/listings/{id}", ...options });
+    >({
+      url: "/chat/rooms",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  public deleteRoom<ThrowOnError extends boolean = false>(
+    options: Options<ChatDeleteRoomData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).delete<
+      ChatDeleteRoomResponses,
+      unknown,
+      ThrowOnError
+    >({
+      url: "/chat/rooms/{id}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  public getRoom<ThrowOnError extends boolean = false>(
+    options: Options<ChatGetRoomData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).get<
+      ChatGetRoomResponses,
+      unknown,
+      ThrowOnError
+    >({ url: "/chat/rooms/{id}", ...options });
+  }
+
+  public getMembers<ThrowOnError extends boolean = false>(
+    options: Options<ChatGetMembersData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).get<
+      ChatGetMembersResponses,
+      unknown,
+      ThrowOnError
+    >({ url: "/chat/rooms/{id}/members", ...options });
+  }
+
+  public getMessages<ThrowOnError extends boolean = false>(
+    options: Options<ChatGetMessagesData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).get<
+      ChatGetMessagesResponses,
+      unknown,
+      ThrowOnError
+    >({ url: "/chat/rooms/{id}/messages", ...options });
+  }
+
+  public createMessage<ThrowOnError extends boolean = false>(
+    options: Options<ChatCreateMessageData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).post<
+      ChatCreateMessageResponses,
+      unknown,
+      ThrowOnError
+    >({
+      url: "/chat/rooms/{id}/messages",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  public inviteMember<ThrowOnError extends boolean = false>(
+    options: Options<ChatInviteMemberData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).post<
+      ChatInviteMemberResponses,
+      unknown,
+      ThrowOnError
+    >({
+      url: "/chat/rooms/{id}/invite",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  public getInvitations<ThrowOnError extends boolean = false>(
+    options?: Options<ChatGetInvitationsData, ThrowOnError>,
+  ) {
+    return (options?.client ?? this.client).get<
+      ChatGetInvitationsResponses,
+      unknown,
+      ThrowOnError
+    >({ url: "/chat/invitations", ...options });
+  }
+
+  public acceptInvitation<ThrowOnError extends boolean = false>(
+    options: Options<ChatAcceptInvitationData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).post<
+      ChatAcceptInvitationResponses,
+      unknown,
+      ThrowOnError
+    >({
+      url: "/chat/invitations/{id}/accept",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  public declineInvitation<ThrowOnError extends boolean = false>(
+    options: Options<ChatDeclineInvitationData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).post<
+      ChatDeclineInvitationResponses,
+      unknown,
+      ThrowOnError
+    >({
+      url: "/chat/invitations/{id}/decline",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  public leaveRoom<ThrowOnError extends boolean = false>(
+    options: Options<ChatLeaveRoomData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).post<
+      ChatLeaveRoomResponses,
+      unknown,
+      ThrowOnError
+    >({
+      url: "/chat/rooms/{id}/leave",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
   }
 }
 
@@ -86,18 +253,8 @@ export class ApiClient extends HeyApiClient {
     ApiClient.__registry.set(this, args?.key);
   }
 
-  public api<ThrowOnError extends boolean = false>(
-    options: Options<ApiData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ApiResponses,
-      unknown,
-      ThrowOnError
-    >({ url: "/", ...options });
-  }
-
-  private _listings?: Listings;
-  get listings(): Listings {
-    return (this._listings ??= new Listings({ client: this.client }));
+  private _chat?: Chat;
+  get chat(): Chat {
+    return (this._chat ??= new Chat({ client: this.client }));
   }
 }

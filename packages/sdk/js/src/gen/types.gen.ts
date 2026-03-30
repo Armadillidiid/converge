@@ -4,102 +4,337 @@ export type ClientOptions = {
   baseUrl: `${string}://${string}/api` | (string & {});
 };
 
-export type ApiData = {
+export type ChatGetRoomsData = {
   body?: never;
   path?: never;
-  query: {
-    firstName: string;
-    lastName: string;
-  };
-  url: "/";
+  query?: never;
+  url: "/chat/rooms";
 };
 
-export type ApiResponses = {
-  /**
-   * OK
-   */
-  200: {
-    fullName: string;
-  };
-};
-
-export type ApiResponse = ApiResponses[keyof ApiResponses];
-
-export type ListingsListData = {
-  body?: never;
-  path?: never;
-  query?: {
-    page?: number;
-    pageSize?: number;
-    city?: string;
-    propertyType?: "apartment" | "house" | "land" | "commercial";
-    listingType?: "rent" | "sale";
-  };
-  url: "/listings";
-};
-
-export type ListingsListResponses = {
+export type ChatGetRoomsResponses = {
   /**
    * OK
    */
   200: {
     items: Array<{
       id: string;
-      title: string;
-      description: string | null;
-      price: number;
-      city: string;
-      state: string;
-      propertyType: "apartment" | "house" | "land" | "commercial";
-      listingType: "rent" | "sale";
-      bedrooms: number | null;
-      bathrooms: number | null;
-      images: Array<string>;
-      status: "active" | "inactive";
-      createdAt: string;
-      updatedAt: string;
-      agentId: string | null;
+      name: string;
+      ownerId: string;
+      createdAt?: unknown;
+      updatedAt?: unknown;
     }>;
-    total: number;
-    page: number;
-    pageSize: number;
   };
 };
 
-export type ListingsListResponse =
-  ListingsListResponses[keyof ListingsListResponses];
+export type ChatGetRoomsResponse =
+  ChatGetRoomsResponses[keyof ChatGetRoomsResponses];
 
-export type ListingsGetByIdData = {
-  body?: never;
-  path: {
-    id: string;
+export type ChatCreateRoomData = {
+  body: {
+    name: string;
   };
+  path?: never;
   query?: never;
-  url: "/listings/{id}";
+  url: "/chat/rooms";
 };
 
-export type ListingsGetByIdResponses = {
+export type ChatCreateRoomResponses = {
   /**
    * OK
    */
   200: {
     id: string;
-    title: string;
-    description: string | null;
-    price: number;
-    city: string;
-    state: string;
-    propertyType: "apartment" | "house" | "land" | "commercial";
-    listingType: "rent" | "sale";
-    bedrooms: number | null;
-    bathrooms: number | null;
-    images: Array<string>;
-    status: "active" | "inactive";
-    createdAt: string;
-    updatedAt: string;
-    agentId: string | null;
+    name: string;
+    ownerId: string;
+    createdAt?: unknown;
+    updatedAt?: unknown;
   };
 };
 
-export type ListingsGetByIdResponse =
-  ListingsGetByIdResponses[keyof ListingsGetByIdResponses];
+export type ChatCreateRoomResponse =
+  ChatCreateRoomResponses[keyof ChatCreateRoomResponses];
+
+export type ChatDeleteRoomData = {
+  body?: {
+    [key: string]: unknown;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/chat/rooms/{id}";
+};
+
+export type ChatDeleteRoomResponses = {
+  /**
+   * OK
+   */
+  200: {
+    success: boolean;
+  };
+};
+
+export type ChatDeleteRoomResponse =
+  ChatDeleteRoomResponses[keyof ChatDeleteRoomResponses];
+
+export type ChatGetRoomData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/chat/rooms/{id}";
+};
+
+export type ChatGetRoomResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    name: string;
+    ownerId: string;
+    createdAt?: unknown;
+    updatedAt?: unknown;
+    members: Array<{
+      id: string;
+      userId: string;
+      role: "owner" | "member";
+      joinedAt?: unknown;
+      user: {
+        id: string;
+        name: string;
+        email: string;
+      };
+    }>;
+  };
+};
+
+export type ChatGetRoomResponse =
+  ChatGetRoomResponses[keyof ChatGetRoomResponses];
+
+export type ChatGetMembersData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/chat/rooms/{id}/members";
+};
+
+export type ChatGetMembersResponses = {
+  /**
+   * OK
+   */
+  200: {
+    items: Array<{
+      id: string;
+      userId: string;
+      role: "owner" | "member";
+      joinedAt?: unknown;
+      user: {
+        id: string;
+        name: string;
+        email: string;
+      };
+    }>;
+  };
+};
+
+export type ChatGetMembersResponse =
+  ChatGetMembersResponses[keyof ChatGetMembersResponses];
+
+export type ChatGetMessagesData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: {
+    limit?: number;
+    cursor?: string;
+  };
+  url: "/chat/rooms/{id}/messages";
+};
+
+export type ChatGetMessagesResponses = {
+  /**
+   * OK
+   */
+  200: {
+    items: Array<{
+      id: string;
+      roomId: string;
+      senderId: string;
+      content: string;
+      createdAt?: unknown;
+    }>;
+    nextCursor?: string;
+  };
+};
+
+export type ChatGetMessagesResponse =
+  ChatGetMessagesResponses[keyof ChatGetMessagesResponses];
+
+export type ChatCreateMessageData = {
+  body: {
+    content: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/chat/rooms/{id}/messages";
+};
+
+export type ChatCreateMessageResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    roomId: string;
+    senderId: string;
+    content: string;
+    createdAt?: unknown;
+  };
+};
+
+export type ChatCreateMessageResponse =
+  ChatCreateMessageResponses[keyof ChatCreateMessageResponses];
+
+export type ChatInviteMemberData = {
+  body: {
+    inviteeId: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/chat/rooms/{id}/invite";
+};
+
+export type ChatInviteMemberResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    roomId: string;
+    inviterId: string;
+    inviteeId: string;
+    status: "pending" | "accepted" | "declined";
+    expiresAt?: unknown;
+    createdAt?: unknown;
+  };
+};
+
+export type ChatInviteMemberResponse =
+  ChatInviteMemberResponses[keyof ChatInviteMemberResponses];
+
+export type ChatGetInvitationsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/chat/invitations";
+};
+
+export type ChatGetInvitationsResponses = {
+  /**
+   * OK
+   */
+  200: {
+    items: Array<{
+      id: string;
+      roomId: string;
+      inviterId: string;
+      inviteeId: string;
+      status: "pending" | "accepted" | "declined";
+      expiresAt?: unknown;
+      createdAt?: unknown;
+    }>;
+  };
+};
+
+export type ChatGetInvitationsResponse =
+  ChatGetInvitationsResponses[keyof ChatGetInvitationsResponses];
+
+export type ChatAcceptInvitationData = {
+  body?: {
+    [key: string]: unknown;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/chat/invitations/{id}/accept";
+};
+
+export type ChatAcceptInvitationResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    roomId: string;
+    inviterId: string;
+    inviteeId: string;
+    status: "pending" | "accepted" | "declined";
+    expiresAt?: unknown;
+    createdAt?: unknown;
+  };
+};
+
+export type ChatAcceptInvitationResponse =
+  ChatAcceptInvitationResponses[keyof ChatAcceptInvitationResponses];
+
+export type ChatDeclineInvitationData = {
+  body?: {
+    [key: string]: unknown;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/chat/invitations/{id}/decline";
+};
+
+export type ChatDeclineInvitationResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    roomId: string;
+    inviterId: string;
+    inviteeId: string;
+    status: "pending" | "accepted" | "declined";
+    expiresAt?: unknown;
+    createdAt?: unknown;
+  };
+};
+
+export type ChatDeclineInvitationResponse =
+  ChatDeclineInvitationResponses[keyof ChatDeclineInvitationResponses];
+
+export type ChatLeaveRoomData = {
+  body?: {
+    [key: string]: unknown;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/chat/rooms/{id}/leave";
+};
+
+export type ChatLeaveRoomResponses = {
+  /**
+   * OK
+   */
+  200: {
+    success: boolean;
+  };
+};
+
+export type ChatLeaveRoomResponse =
+  ChatLeaveRoomResponses[keyof ChatLeaveRoomResponses];

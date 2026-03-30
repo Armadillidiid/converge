@@ -64,6 +64,7 @@ export class ChatService {
     const roomIds = members.map((m) => m.roomId);
     const rooms = await this.drizzle.db.select().from(schema.chatRoom);
 
+    // TODO: use roomListDto rather than parsing each room individually. Zod parsing can be expensive.
     return rooms
       .filter((room) => roomIds.includes(room.id))
       .map((r) => roomDto.parse(r));

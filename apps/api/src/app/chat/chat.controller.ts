@@ -26,11 +26,6 @@ import {
   invitationSchema,
 } from "./chat.contract.js";
 
-interface SuccessResponse<T> {
-  success: true;
-  data: T;
-}
-
 @Controller("chat")
 @UseGuards(AuthGuard)
 export class ChatController {
@@ -40,24 +35,16 @@ export class ChatController {
   async createRoom(
     @Session() session: UserSession,
     @Body() body: unknown,
-  ): Promise<SuccessResponse<z.infer<typeof roomSchema>>> {
+  ): Promise<z.infer<typeof roomSchema>> {
     const data = createRoomSchema.parse(body);
-    const room = await this.chatService.createRoom(session.user.id, data);
-    return {
-      success: true,
-      data: room as unknown as z.infer<typeof roomSchema>,
-    };
+    return this.chatService.createRoom(session.user.id, data);
   }
 
   @Get("rooms")
   async getRooms(
     @Session() session: UserSession,
-  ): Promise<SuccessResponse<z.infer<typeof roomSchema>[]>> {
-    const rooms = await this.chatService.getRooms(session.user.id);
-    return {
-      success: true,
-      data: rooms as unknown as z.infer<typeof roomSchema>[],
-    };
+  ): Promise<z.infer<typeof roomSchema>[]> {
+    return this.chatService.getRooms(session.user.id);
   }
 
   @Get("rooms/:id")
@@ -65,24 +52,20 @@ export class ChatController {
   async getRoom(
     @Session() session: UserSession,
     @Param("id") roomId: string,
-  ): Promise<SuccessResponse<z.infer<typeof roomWithMembersSchema>>> {
+  ): Promise<z.infer<typeof roomWithMembersSchema>> {
     const room = await this.chatService.getRoom(session.user.id, roomId);
-    return {
-      success: true,
-      data: room as unknown as z.infer<typeof roomWithMembersSchema>,
-    };
+    if (!room) {
+      throw new Error("Room not found");
+    }
+    return room;
   }
 
   @Get("rooms/:id/members")
   @UseGuards(ChatMembershipGuard)
   async getMembers(
     @Param("id") roomId: string,
-  ): Promise<SuccessResponse<z.infer<typeof roomMemberSchema>[]>> {
-    const members = await this.chatService.getMembers(roomId);
-    return {
-      success: true,
-      data: members as unknown as z.infer<typeof roomMemberSchema>[],
-    };
+  ): Promise<z.infer<typeof roomMemberSchema>[]> {
+    return this.chatService.getMembers(roomId);
   }
 
   @Get("rooms/:id/messages")
@@ -90,16 +73,12 @@ export class ChatController {
   async getMessages(
     @Param("id") roomId: string,
     @Body() body: unknown,
-  ): Promise<SuccessResponse<z.infer<typeof paginatedMessagesSchema>>> {
+  ): Promise<z.infer<typeof paginatedMessagesSchema>> {
     const data = getMessagesSchema.parse(body);
-    const messages = await this.chatService.getMessages(roomId, {
+    return this.chatService.getMessages(roomId, {
       limit: data.limit ?? 50,
       cursor: data.cursor,
     });
-    return {
-      success: true,
-      data: messages as unknown as z.infer<typeof paginatedMessagesSchema>,
-    };
   }
 
   @Post("rooms/:id/messages")
@@ -108,17 +87,9 @@ export class ChatController {
     @Session() session: UserSession,
     @Param("id") roomId: string,
     @Body() body: unknown,
-  ): Promise<SuccessResponse<z.infer<typeof messageSchema>>> {
+  ): Promise<z.infer<typeof messageSchema>> {
     const data = createMessageSchema.parse(body);
-    const message = await this.chatService.createMessage(
-      session.user.id,
-      roomId,
-      data,
-    );
-    return {
-      success: true,
-      data: message as unknown as z.infer<typeof messageSchema>,
-    };
+    return this.chatService.createMessage(session.user.id, roomId, data);
   }
 
   @Post("rooms/:id/invite")
@@ -126,58 +97,36 @@ export class ChatController {
     @Session() session: UserSession,
     @Param("id") roomId: string,
     @Body() body: unknown,
-  ): Promise<SuccessResponse<z.infer<typeof invitationSchema>>> {
+  ): Promise<z.infer<typeof invitationSchema>> {
     const data = inviteMemberSchema.parse(body);
-    const invitation = await this.chatService.inviteMember(
+    return this.chatService.inviteMember(
       session.user.id,
       roomId,
       data.inviteeId,
     );
-    return {
-      success: true,
-      data: invitation as unknown as z.infer<typeof invitationSchema>,
-    };
   }
 
   @Get("invitations")
   async getInvitations(
     @Session() session: UserSession,
-  ): Promise<SuccessResponse<z.infer<typeof invitationSchema>[]>> {
-    const invitations = await this.chatService.getInvitations(session.user.id);
-    return {
-      success: true,
-      data: invitations as unknown as z.infer<typeof invitationSchema>[],
-    };
+  ): Promise<z.infer<typeof invitationSchema>[]> {
+    return this.chatService.getInvitations(session.user.id);
   }
 
   @Post("invitations/:id/accept")
   async acceptInvitation(
     @Session() session: UserSession,
     @Param("id") invitationId: string,
-  ): Promise<SuccessResponse<z.infer<typeof invitationSchema>>> {
-    const invitation = await this.chatService.acceptInvitation(
-      session.user.id,
-      invitationId,
-    );
-    return {
-      success: true,
-      data: invitation as unknown as z.infer<typeof invitationSchema>,
-    };
+  ): Promise<z.infer<typeof invitationSchema>> {
+    return this.chatService.acceptInvitation(session.user.id, invitationId);
   }
 
   @Post("invitations/:id/decline")
   async declineInvitation(
     @Session() session: UserSession,
     @Param("id") invitationId: string,
-  ): Promise<SuccessResponse<z.infer<typeof invitationSchema>>> {
-    const invitation = await this.chatService.declineInvitation(
-      session.user.id,
-      invitationId,
-    );
-    return {
-      success: true,
-      data: invitation as unknown as z.infer<typeof invitationSchema>,
-    };
+  ): Promise<z.infer<typeof invitationSchema>> {
+    return this.chatService.declineInvitation(session.user.id, invitationId);
   }
 
   @Post("rooms/:id/leave")
@@ -185,14 +134,12 @@ export class ChatController {
   async leaveRoom(
     @Session() session: UserSession,
     @Param("id") roomId: string,
-  ): Promise<{ success: true }> {
+  ): Promise<void> {
     await this.chatService.leaveRoom(session.user.id, roomId);
-    return { success: true };
   }
 
   @Delete("rooms/:id")
-  async deleteRoom(@Param("id") roomId: string): Promise<{ success: true }> {
+  async deleteRoom(@Param("id") roomId: string): Promise<void> {
     await this.chatService.deleteRoom(roomId);
-    return { success: true };
   }
 }

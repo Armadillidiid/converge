@@ -64,7 +64,9 @@ describe("ChatService", () => {
 
       const result = await service.createRoom(userId, createRoomDto);
 
-      expect(result).toEqual(mockRoom);
+      expect(result.id).toBe(mockRoom.id);
+      expect(result.name).toBe(mockRoom.name);
+      expect(result.ownerId).toBe(mockRoom.ownerId);
       expect(mockDb.insert).toHaveBeenCalled();
     });
   });
@@ -146,7 +148,11 @@ describe("ChatService", () => {
 
       const result = await service.inviteMember(inviterId, roomId, inviteeId);
 
-      expect(result).toEqual(mockInvitation);
+      expect(result.id).toBe(mockInvitation.id);
+      expect(result.roomId).toBe(mockInvitation.roomId);
+      expect(result.inviterId).toBe(mockInvitation.inviterId);
+      expect(result.inviteeId).toBe(mockInvitation.inviteeId);
+      expect(result.status).toBe("pending");
       expect(mockDb.insert).toHaveBeenCalled();
     });
   });
@@ -192,6 +198,7 @@ describe("ChatService", () => {
         inviteeId: userId,
         status: "pending",
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(),
       };
 
       mockDb.select.mockReturnValueOnce({
@@ -212,7 +219,7 @@ describe("ChatService", () => {
 
       const result = await service.acceptInvitation(userId, invitationId);
 
-      expect(result!.status).toBe("accepted");
+      expect(result.status).toBe("accepted");
     });
   });
 
@@ -224,8 +231,11 @@ describe("ChatService", () => {
       const mockInvitation = {
         id: invitationId,
         roomId: "room-123",
+        inviterId: "user-456",
         inviteeId: userId,
         status: "pending",
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(),
       };
 
       mockDb.select.mockReturnValueOnce({
@@ -246,7 +256,7 @@ describe("ChatService", () => {
 
       const result = await service.declineInvitation(userId, invitationId);
 
-      expect(result!.status).toBe("declined");
+      expect(result.status).toBe("declined");
     });
   });
 

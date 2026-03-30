@@ -1,11 +1,15 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 
+const dateToString = z
+  .union([z.date(), z.string()])
+  .transform((v) => (v instanceof Date ? v.toISOString() : v));
+
 export const roomMemberSchema = z.object({
   id: z.string(),
   userId: z.string(),
   role: z.enum(["owner", "member"]),
-  joinedAt: z.string(),
+  joinedAt: dateToString,
   user: z.object({
     id: z.string(),
     name: z.string(),
@@ -17,8 +21,8 @@ export const roomSchema = z.object({
   id: z.string(),
   name: z.string(),
   ownerId: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  createdAt: dateToString,
+  updatedAt: dateToString,
 });
 
 export const roomWithMembersSchema = roomSchema.extend({
@@ -31,8 +35,8 @@ export const invitationSchema = z.object({
   inviterId: z.string(),
   inviteeId: z.string(),
   status: z.enum(["pending", "accepted", "declined"]),
-  expiresAt: z.string(),
-  createdAt: z.string(),
+  expiresAt: dateToString,
+  createdAt: dateToString,
 });
 
 export const messageSchema = z.object({
@@ -40,7 +44,7 @@ export const messageSchema = z.object({
   roomId: z.string(),
   senderId: z.string(),
   content: z.string(),
-  createdAt: z.string(),
+  createdAt: dateToString,
 });
 
 export const paginatedMessagesSchema = z.object({
@@ -129,7 +133,9 @@ export const chatContract = {
 
 export type Room = z.infer<typeof roomSchema>;
 export type RoomWithMembers = z.infer<typeof roomWithMembersSchema>;
+export type RoomMember = z.infer<typeof roomMemberSchema>;
 export type Message = z.infer<typeof messageSchema>;
+export type PaginatedMessages = z.infer<typeof paginatedMessagesSchema>;
 export type Invitation = z.infer<typeof invitationSchema>;
 export type CreateRoomInput = z.infer<typeof createRoomSchema>;
 export type CreateMessageInput = z.infer<typeof createMessageSchema>;

@@ -3,58 +3,27 @@ import {
   NotFoundException,
   ForbiddenException,
 } from "@nestjs/common";
+import { z } from "zod";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
 import { eq, and, desc } from "@repo/database";
 import { schema } from "@repo/database";
+import {
+  roomSchema,
+  roomWithMembersSchema,
+  roomMemberSchema,
+  invitationSchema,
+  messageSchema,
+  paginatedMessagesSchema,
+  type CreateRoomInput,
+  type CreateMessageInput,
+} from "./chat.contract.js";
 
-export interface CreateRoomInput {
-  name: string;
-}
-
-export interface Room {
-  id: string;
-  name: string;
-  ownerId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface RoomWithMembers extends Room {
-  members: Array<{
-    id: string;
-    userId: string;
-    role: string;
-    joinedAt: Date;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-    };
-  }>;
-}
-
-export interface Invitation {
-  id: string;
-  roomId: string;
-  inviterId: string;
-  inviteeId: string;
-  status: string;
-  expiresAt: Date;
-  createdAt: Date;
-}
-
-export interface Message {
-  id: string;
-  roomId: string;
-  senderId: string;
-  content: string;
-  createdAt: Date;
-}
-
-export interface PaginatedMessages {
-  items: Message[];
-  nextCursor?: string | undefined;
-}
+export type Room = z.infer<typeof roomSchema>;
+export type RoomWithMembers = z.infer<typeof roomWithMembersSchema>;
+export type RoomMember = z.infer<typeof roomMemberSchema>;
+export type Invitation = z.infer<typeof invitationSchema>;
+export type Message = z.infer<typeof messageSchema>;
+export type PaginatedMessages = z.infer<typeof paginatedMessagesSchema>;
 
 @Injectable()
 export class ChatService {
@@ -79,7 +48,7 @@ export class ChatService {
       role: "owner",
     });
 
-    return room;
+    return roomSchema.parse(room);
   }
 
   async getRooms(userId: string): Promise<Room[]> {
@@ -95,7 +64,9 @@ export class ChatService {
     const roomIds = members.map((m) => m.roomId);
     const rooms = await this.drizzle.db.select().from(schema.chatRoom);
 
-    return rooms.filter((room) => roomIds.includes(room.id));
+    return rooms
+      .filter((room) => roomIds.includes(room.id))
+      .map((r) => roomSchema.parse(r));
   }
 
   async getRoom(
@@ -128,21 +99,13 @@ export class ChatService {
       .innerJoin(schema.user, eq(schema.chatMember.userId, schema.user.id))
       .where(eq(schema.chatMember.roomId, roomId));
 
-    return {
+    return roomWithMembersSchema.parse({
       ...room,
       members,
-    };
+    });
   }
 
-  async getMembers(roomId: string): Promise<
-    Array<{
-      id: string;
-      userId: string;
-      role: string;
-      joinedAt: Date;
-      user: { id: string; name: string; email: string };
-    }>
-  > {
+  async getMembers(roomId: string): Promise<RoomMember[]> {
     const members = await this.drizzle.db
       .select({
         id: schema.chatMember.id,
@@ -159,7 +122,7 @@ export class ChatService {
       .innerJoin(schema.user, eq(schema.chatMember.userId, schema.user.id))
       .where(eq(schema.chatMember.roomId, roomId));
 
-    return members;
+    return members.map((m) => roomMemberSchema.parse(m));
   }
 
   async inviteMember(
@@ -198,7 +161,7 @@ export class ChatService {
       throw new Error("Failed to create invitation");
     }
 
-    return invitation;
+    return invitationSchema.parse(invitation);
   }
 
   async getInvitations(userId: string): Promise<Invitation[]> {
@@ -212,7 +175,7 @@ export class ChatService {
         ),
       );
 
-    return invitations;
+    return invitations.map((i) => invitationSchema.parse(i));
   }
 
   async acceptInvitation(
@@ -257,7 +220,7 @@ export class ChatService {
       role: "member",
     });
 
-    return updatedInvitation;
+    return invitationSchema.parse(updatedInvitation);
   }
 
   async declineInvitation(
@@ -288,7 +251,7 @@ export class ChatService {
       throw new Error("Failed to decline invitation");
     }
 
-    return updatedInvitation;
+    return invitationSchema.parse(updatedInvitation);
   }
 
   async getMessages(
@@ -304,19 +267,19 @@ export class ChatService {
       .orderBy(desc(schema.chatMessage.createdAt))
       .limit(limit);
 
-    return {
+    return paginatedMessagesSchema.parse({
       items: messages,
       nextCursor:
         messages.length === limit
           ? messages[messages.length - 1]?.id
           : undefined,
-    };
+    });
   }
 
   async createMessage(
     senderId: string,
     roomId: string,
-    data: { content: string },
+    data: CreateMessageInput,
   ): Promise<Message> {
     const [message] = await this.drizzle.db
       .insert(schema.chatMessage)
@@ -331,7 +294,7 @@ export class ChatService {
       throw new Error("Failed to create message");
     }
 
-    return message;
+    return messageSchema.parse(message);
   }
 
   async leaveRoom(userId: string, roomId: string): Promise<void> {

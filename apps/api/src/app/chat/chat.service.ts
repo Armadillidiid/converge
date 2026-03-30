@@ -53,7 +53,7 @@ export interface Message {
 
 export interface PaginatedMessages {
   items: Message[];
-  nextCursor?: string;
+  nextCursor?: string | undefined;
 }
 
 @Injectable()
@@ -293,7 +293,7 @@ export class ChatService {
 
   async getMessages(
     roomId: string,
-    options: { limit?: number; cursor?: string },
+    options: { limit?: number; cursor?: string | undefined },
   ): Promise<PaginatedMessages> {
     const limit = options.limit ?? 50;
 

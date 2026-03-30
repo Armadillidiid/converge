@@ -40,15 +40,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-  deploy:
-    name: Deploy App
-    needs: version-or-publish
-    if: needs.version-or-publish.outputs.published == 'true'
-    uses: ./.github/workflows/deploy-app.yaml
-    with:
-      environment: production
-      ref: ${{ github.sha }}
-    secrets:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  # deploy:
+  #   name: Deploy App
+  #   needs: version-or-publish
+  #   if: needs.version-or-publish.outputs.published == 'true'
+  #   uses: ./.github/workflows/deploy-app.yaml
+  #   with:
+  #     environment: production
+  #     ref: ${{ github.sha }}
+  #   secrets:
+  #     VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  #     VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  #     VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

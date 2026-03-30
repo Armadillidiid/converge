@@ -19,14 +19,13 @@ export function RoomListSidebar({
   activeRoomId,
   onRoomSelect,
 }: RoomListSidebarProperties) {
-  const {
-    rooms: {
-      data: { items },
-    },
-  } = useChatRooms();
-  const { invitations } = useInvitations();
+  const { roomsQuery } = useChatRooms();
+  const { invitationsQuery } = useInvitations();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showInvitationsModal, setShowInvitationsModal] = useState(false);
+
+  const rooms = roomsQuery.data?.items ?? [];
+  const invitations = invitationsQuery.data?.items ?? [];
 
   return (
     <div className="w-80 border-r flex flex-col h-full">
@@ -52,13 +51,13 @@ export function RoomListSidebar({
       </div>
 
       <ScrollArea className="flex-1">
-        {items.length === 0 ? (
+        {rooms.length === 0 ? (
           <div className="p-4 text-center text-muted-foreground">
             No rooms yet. Create one to get started!
           </div>
         ) : (
           <div className="divide-y">
-            {items.map((room) => (
+            {rooms.map((room) => (
               <button
                 key={room.id}
                 type="button"

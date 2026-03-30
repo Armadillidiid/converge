@@ -11,9 +11,10 @@ interface MembersSidebarProperties {
 }
 
 export function MembersSidebar({ roomId }: MembersSidebarProperties) {
-  const { members } = useRoomMembers(roomId);
+  const { membersQuery } = useRoomMembers(roomId);
   const { onlineUsers } = useChatSocket(roomId);
 
+  const members = membersQuery.data?.items ?? [];
   const onlineSet = new Set(onlineUsers);
 
   const sortedMembers = [...members].sort((a, b) => {

@@ -20,7 +20,10 @@ export function InvitationsModal({
   open,
   onOpenChange,
 }: InvitationsModalProperties) {
-  const { invitations, acceptInvitation, declineInvitation } = useInvitations();
+  const { invitationsQuery, acceptMutation, declineMutation } =
+    useInvitations();
+
+  const invitations = invitationsQuery.data?.items ?? [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -57,13 +60,17 @@ export function InvitationsModal({
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => declineInvitation(inv.id)}
+                        onClick={() =>
+                          declineMutation.mutateAsync({ path: { id: inv.id } })
+                        }
                       >
                         Decline
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => acceptInvitation(inv.id)}
+                        onClick={() =>
+                          acceptMutation.mutateAsync({ path: { id: inv.id } })
+                        }
                       >
                         Accept
                       </Button>

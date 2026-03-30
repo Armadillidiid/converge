@@ -24,13 +24,15 @@ export function CreateRoomModal({
   onOpenChange,
 }: CreateRoomModalProperties) {
   const [name, setName] = useState("");
-  const { createRoom, isCreating } = useChatRooms();
+  const { createRoomMutation } = useChatRooms();
   const router = useRouter();
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
     try {
-      const room = await createRoom(name.trim());
+      const room = await createRoomMutation.mutateAsync({
+        body: { name: name.trim() },
+      });
       onOpenChange(false);
       router.push(`/chat/${room.id}`);
     } catch (error) {
@@ -52,7 +54,7 @@ export function CreateRoomModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter room name"
-              disabled={isCreating}
+              disabled={createRoomMutation.isPending}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleSubmit();
@@ -65,7 +67,10 @@ export function CreateRoomModal({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!name.trim() || isCreating}>
+          <Button
+            onClick={handleSubmit}
+            disabled={!name.trim() || createRoomMutation.isPending}
+          >
             Create
           </Button>
         </DialogFooter>

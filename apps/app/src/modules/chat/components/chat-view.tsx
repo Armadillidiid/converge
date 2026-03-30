@@ -19,8 +19,8 @@ export function ChatView({ roomId }: ChatViewProperties) {
   const { data: session } = auth.useSession();
   const currentUserId = session?.user?.id;
 
-  const { messages, sendMessage } = useChatMessages(roomId);
-  const { members } = useRoomMembers(roomId);
+  const { messagesQuery, sendMessageMutation } = useChatMessages(roomId);
+  const { membersQuery } = useRoomMembers(roomId);
   const {
     isConnected,
     newMessages,
@@ -30,16 +30,18 @@ export function ChatView({ roomId }: ChatViewProperties) {
     sendTypingStop,
   } = useChatSocket(roomId);
 
+  const messages = messagesQuery.data?.items ?? [];
+
   const membersMap = useMemo(() => {
     const map = new Map<string, { name: string | null; email: string }>();
-    for (const member of members) {
+    for (const member of membersQuery.data?.items ?? []) {
       map.set(member.userId, {
         name: member.user.name,
         email: member.user.email,
       });
     }
     return map;
-  }, [members]);
+  }, [membersQuery.data?.items]);
 
   const allMessages = [...messages, ...newMessages];
   const scrollReference = useRef<HTMLDivElement>(null);
@@ -50,7 +52,10 @@ export function ChatView({ roomId }: ChatViewProperties) {
 
   const handleSend = (content: string) => {
     sendSocketMessage(content);
-    sendMessage(content);
+    sendMessageMutation.mutateAsync({
+      path: { id: roomId },
+      body: { content },
+    });
   };
 
   const getSenderInfo = (senderId: string) => {

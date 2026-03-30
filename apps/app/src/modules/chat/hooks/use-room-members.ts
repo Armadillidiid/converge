@@ -9,6 +9,6 @@ export function useRoomMembers(roomId: string) {
   );
 
   return {
-    members: membersQuery.data?.items ?? [],
+    membersQuery,
   };
 }

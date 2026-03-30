@@ -164,17 +164,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { roomId, content } = parsed.data as WsSendMessageInput;
     const userId = client.data.userId;
 
-    const message = await this.chatService.createMessage(userId, roomId, {
-      content: content.trim(),
-    });
-
-    this.server.to(`room:${roomId}`).emit("message:new", {
-      id: message.id,
-      roomId: message.roomId,
-      senderId: message.senderId,
+    client.to(`room:${roomId}`).emit("message:new", {
+      roomId,
+      senderId: userId,
       senderName: client.data.userName,
-      content: message.content,
-      createdAt: message.createdAt,
+      content: content.trim(),
     });
   }
 

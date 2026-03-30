@@ -30,9 +30,8 @@ if (isWaitlistModeEnabled) {
       return [
         ...existingRedirects,
         {
-          source:
-            "/:path((?!$|privacy$|terms$|api(?:/.*)?$|_next(?:/.*)?$|favicon\\.ico$|robots\\.txt$|sitemap\\.xml$).+)",
-          destination: "/",
+          source: "/",
+          destination: "/chat",
           permanent: false,
         },
       ];

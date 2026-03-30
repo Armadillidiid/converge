@@ -38,11 +38,11 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(RawBodyMiddleware)
-      .forRoutes("auth/(.*)")
+      .forRoutes("auth/*path")
       .apply(UrlencodedBodyMiddleware)
-      .forRoutes("(.*)")
+      .forRoutes("*path")
       .apply(JsonBodyMiddleware)
-      .exclude("auth/(.*)")
-      .forRoutes("(.*)");
+      .exclude("auth/*path")
+      .forRoutes("*path");
   }
 }

@@ -16,6 +16,7 @@ export const genOpenapiDocs = async () => {
       title: "Converge API",
       version: "1.0.0",
     },
+    commonSchemas: {},
     ...(servers ? { servers } : {}),
   });
 

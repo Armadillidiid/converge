@@ -1,4 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
   chatGetMessagesOptions,
   chatCreateMessageMutation,
@@ -7,7 +11,7 @@ import {
 export function useChatMessages(roomId: string) {
   const queryClient = useQueryClient();
 
-  const messagesQuery = useQuery(
+  const messagesQuery = useSuspenseQuery(
     chatGetMessagesOptions({
       path: { id: roomId },
       query: { limit: 100 },
@@ -25,7 +29,6 @@ export function useChatMessages(roomId: string) {
 
   return {
     messages: messagesQuery.data?.items ?? [],
-    isLoading: messagesQuery.isLoading,
     sendMessage: (content: string) =>
       sendMessageMutation.mutateAsync({
         path: { id: roomId },

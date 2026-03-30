@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@repo/design-system/components/ui/card";
-import { RoomListSidebar } from "./components/room-list-sidebar";
+import {
+  RoomListSidebar,
+  RoomListSidebarSkeleton,
+} from "./components/room-list-sidebar";
+import { ChatErrorBoundary } from "./components/chat-error-boundary";
 
 export function ChatView() {
   const router = useRouter();
@@ -16,10 +20,14 @@ export function ChatView() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      <RoomListSidebar
-        activeRoomId={activeRoomId}
-        onRoomSelect={handleRoomSelect}
-      />
+      <ChatErrorBoundary>
+        <Suspense fallback={<RoomListSidebarSkeleton />}>
+          <RoomListSidebar
+            activeRoomId={activeRoomId}
+            onRoomSelect={handleRoomSelect}
+          />
+        </Suspense>
+      </ChatErrorBoundary>
 
       <div className="flex-1 flex items-center justify-center">
         <Card className="p-8 text-center">

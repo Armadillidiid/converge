@@ -19,7 +19,11 @@ export function RoomListSidebar({
   activeRoomId,
   onRoomSelect,
 }: RoomListSidebarProperties) {
-  const { rooms, isLoading } = useChatRooms();
+  const {
+    rooms: {
+      data: { items },
+    },
+  } = useChatRooms();
   const { invitations } = useInvitations();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showInvitationsModal, setShowInvitationsModal] = useState(false);
@@ -48,19 +52,16 @@ export function RoomListSidebar({
       </div>
 
       <ScrollArea className="flex-1">
-        {isLoading ? (
-          <div className="p-4 text-center text-muted-foreground">
-            Loading...
-          </div>
-        ) : rooms.length === 0 ? (
+        {items.length === 0 ? (
           <div className="p-4 text-center text-muted-foreground">
             No rooms yet. Create one to get started!
           </div>
         ) : (
           <div className="divide-y">
-            {rooms.map((room) => (
+            {items.map((room) => (
               <button
                 key={room.id}
+                type="button"
                 onClick={() => onRoomSelect(room.id)}
                 className={cn(
                   "w-full p-4 text-left hover:bg-muted/50 transition-colors",
@@ -83,6 +84,31 @@ export function RoomListSidebar({
         open={showInvitationsModal}
         onOpenChange={setShowInvitationsModal}
       />
+    </div>
+  );
+}
+
+export function RoomListSidebarSkeleton() {
+  return (
+    <div className="w-80 border-r flex flex-col h-full">
+      <div className="p-4 border-b flex items-center justify-between">
+        <h2 className="font-semibold">Chat</h2>
+        <Button size="sm" disabled>
+          New Room
+        </Button>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-3">
+          {[1, 2, 3].map((i) => (
+            <button
+              key={i}
+              type="button"
+              className="h-16 bg-muted animate-pulse rounded-md w-full"
+              disabled
+            />
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 }

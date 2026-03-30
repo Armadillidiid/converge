@@ -19,7 +19,7 @@ export function ChatView({ roomId }: ChatViewProperties) {
   const { data: session } = auth.useSession();
   const currentUserId = session?.user?.id;
 
-  const { messages, sendMessage, isSending } = useChatMessages(roomId);
+  const { messages, sendMessage } = useChatMessages(roomId);
   const { members } = useRoomMembers(roomId);
   const {
     isConnected,
@@ -106,11 +106,37 @@ export function ChatView({ roomId }: ChatViewProperties) {
           onSend={handleSend}
           onTypingStart={sendTypingStart}
           onTypingStop={sendTypingStop}
-          disabled={!isConnected || isSending}
+          disabled={!isConnected}
         />
       </div>
 
       <MembersSidebar roomId={roomId} />
+    </div>
+  );
+}
+
+export function ChatViewSkeleton() {
+  return (
+    <div className="flex h-full flex-1">
+      <div className="flex-1 flex flex-col">
+        <ScrollArea className="flex-1 p-4">
+          <div className="flex flex-col gap-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex gap-3 p-2">
+                <div className="w-8 h-8 bg-muted animate-pulse rounded-full" />
+                <div className="flex flex-col gap-1 flex-1">
+                  <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                  <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+
+        <div className="p-4 border-t">
+          <div className="h-10 bg-muted animate-pulse rounded-md" />
+        </div>
+      </div>
     </div>
   );
 }

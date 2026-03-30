@@ -1,4 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
   chatGetInvitationsOptions,
   chatAcceptInvitationMutation,
@@ -8,7 +12,7 @@ import {
 export function useInvitations() {
   const queryClient = useQueryClient();
 
-  const invitationsQuery = useQuery(chatGetInvitationsOptions({}));
+  const invitationsQuery = useSuspenseQuery(chatGetInvitationsOptions({}));
 
   const acceptMutation = useMutation({
     ...chatAcceptInvitationMutation(),
@@ -27,7 +31,6 @@ export function useInvitations() {
 
   return {
     invitations: invitationsQuery.data?.items ?? [],
-    isLoading: invitationsQuery.isLoading,
     acceptInvitation: (id: string) =>
       acceptMutation.mutateAsync({ path: { id } }),
     declineInvitation: (id: string) =>

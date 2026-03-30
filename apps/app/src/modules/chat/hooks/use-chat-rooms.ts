@@ -1,4 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
   chatGetRoomsOptions,
   chatCreateRoomMutation,
@@ -9,7 +13,7 @@ import {
 export function useChatRooms() {
   const queryClient = useQueryClient();
 
-  const roomsQuery = useQuery(chatGetRoomsOptions({}));
+  const roomsQuery = useSuspenseQuery(chatGetRoomsOptions({}));
 
   const createRoomMutation = useMutation({
     ...chatCreateRoomMutation(),
@@ -33,8 +37,7 @@ export function useChatRooms() {
   });
 
   return {
-    rooms: roomsQuery.data?.items ?? [],
-    isLoading: roomsQuery.isLoading,
+    rooms: roomsQuery,
     createRoom: (name: string) =>
       createRoomMutation.mutateAsync({ body: { name } }),
     isCreating: createRoomMutation.isPending,

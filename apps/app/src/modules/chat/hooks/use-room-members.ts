@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { chatGetMembersOptions } from "@repo/sdk/tanstack";
 
 export function useRoomMembers(roomId: string) {
-  const membersQuery = useQuery(
+  const membersQuery = useSuspenseQuery(
     chatGetMembersOptions({
       path: { id: roomId },
     }),
@@ -10,6 +10,5 @@ export function useRoomMembers(roomId: string) {
 
   return {
     members: membersQuery.data?.items ?? [],
-    isLoading: membersQuery.isLoading,
   };
 }

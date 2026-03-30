@@ -8,8 +8,8 @@ export function getSocket(): Socket {
   if (!socket) {
     const token = readAuthTokenFromDocumentCookie();
     socket = io(`${env.NEXT_PUBLIC_API_BASE_URL}/chat`, {
-      auth: { token },
-      transports: ["websocket"],
+      extraHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+      transports: ["websocket", "polling"],
       autoConnect: false,
     });
   }

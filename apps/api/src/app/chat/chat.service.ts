@@ -4,7 +4,7 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
-import { eq, and } from "@repo/database";
+import { eq, and, desc } from "@repo/database";
 import { schema } from "@repo/database";
 
 export interface CreateRoomInput {
@@ -41,6 +41,19 @@ export interface Invitation {
   status: string;
   expiresAt: Date;
   createdAt: Date;
+}
+
+export interface Message {
+  id: string;
+  roomId: string;
+  senderId: string;
+  content: string;
+  createdAt: Date;
+}
+
+export interface PaginatedMessages {
+  items: Message[];
+  nextCursor?: string;
 }
 
 @Injectable()
@@ -276,5 +289,75 @@ export class ChatService {
     }
 
     return updatedInvitation;
+  }
+
+  async getMessages(
+    roomId: string,
+    options: { limit?: number; cursor?: string },
+  ): Promise<PaginatedMessages> {
+    const limit = options.limit ?? 50;
+
+    const messages = await this.drizzle.db
+      .select()
+      .from(schema.chatMessage)
+      .where(eq(schema.chatMessage.roomId, roomId))
+      .orderBy(desc(schema.chatMessage.createdAt))
+      .limit(limit);
+
+    return {
+      items: messages,
+      nextCursor:
+        messages.length === limit
+          ? messages[messages.length - 1]?.id
+          : undefined,
+    };
+  }
+
+  async createMessage(
+    senderId: string,
+    roomId: string,
+    data: { content: string },
+  ): Promise<Message> {
+    const [message] = await this.drizzle.db
+      .insert(schema.chatMessage)
+      .values({
+        roomId,
+        senderId,
+        content: data.content,
+      })
+      .returning();
+
+    if (!message) {
+      throw new Error("Failed to create message");
+    }
+
+    return message;
+  }
+
+  async leaveRoom(userId: string, roomId: string): Promise<void> {
+    const [membership] = await this.drizzle.db
+      .select()
+      .from(schema.chatMember)
+      .where(
+        and(
+          eq(schema.chatMember.userId, userId),
+          eq(schema.chatMember.roomId, roomId),
+        ),
+      )
+      .limit(1);
+
+    if (!membership) {
+      throw new NotFoundException("You are not a member of this room");
+    }
+
+    await this.drizzle.db
+      .delete(schema.chatMember)
+      .where(eq(schema.chatMember.id, membership.id));
+  }
+
+  async deleteRoom(roomId: string): Promise<void> {
+    await this.drizzle.db
+      .delete(schema.chatRoom)
+      .where(eq(schema.chatRoom.id, roomId));
   }
 }

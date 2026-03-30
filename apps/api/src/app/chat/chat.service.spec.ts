@@ -17,6 +17,8 @@ describe("ChatService", () => {
     const mockLimit = vi.fn();
     const mockUpdate = vi.fn().mockReturnThis();
     const mockSet = vi.fn().mockReturnThis();
+    const mockOrderBy = vi.fn();
+    const mockDelete = vi.fn().mockReturnThis();
 
     mockDb = {
       insert: mockInsert,
@@ -28,6 +30,8 @@ describe("ChatService", () => {
       limit: mockLimit,
       update: mockUpdate,
       set: mockSet,
+      orderBy: mockOrderBy,
+      delete: mockDelete,
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -130,7 +134,6 @@ describe("ChatService", () => {
         createdAt: new Date(),
       };
 
-      // Mock get room
       mockDb.select.mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
@@ -139,7 +142,6 @@ describe("ChatService", () => {
         }),
       });
 
-      // Mock create invitation
       mockDb.returning.mockResolvedValue([mockInvitation]);
 
       const result = await service.inviteMember(inviterId, roomId, inviteeId);
@@ -192,7 +194,6 @@ describe("ChatService", () => {
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       };
 
-      // Mock get invitation
       mockDb.select.mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
@@ -201,7 +202,6 @@ describe("ChatService", () => {
         }),
       });
 
-      // Mock update invitation
       mockDb.set.mockReturnValueOnce({
         where: vi.fn().mockReturnValue({
           returning: vi
@@ -228,7 +228,6 @@ describe("ChatService", () => {
         status: "pending",
       };
 
-      // Mock get invitation
       mockDb.select.mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
@@ -237,7 +236,6 @@ describe("ChatService", () => {
         }),
       });
 
-      // Mock update invitation
       mockDb.set.mockReturnValueOnce({
         where: vi.fn().mockReturnValue({
           returning: vi
@@ -249,6 +247,109 @@ describe("ChatService", () => {
       const result = await service.declineInvitation(userId, invitationId);
 
       expect(result!.status).toBe("declined");
+    });
+  });
+
+  describe("getMessages", () => {
+    it("should return paginated messages for a room", async () => {
+      const roomId = "room-123";
+      const limit = 50;
+
+      const mockMessages = [
+        {
+          id: "msg-1",
+          roomId,
+          senderId: "user-1",
+          content: "Hello world",
+          createdAt: new Date(),
+        },
+        {
+          id: "msg-2",
+          roomId,
+          senderId: "user-2",
+          content: "Hey there",
+          createdAt: new Date(),
+        },
+      ];
+
+      mockDb.select.mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue(mockMessages),
+            }),
+          }),
+        }),
+      });
+
+      const result = await service.getMessages(roomId, { limit });
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items[0]!.content).toBe("Hello world");
+    });
+  });
+
+  describe("createMessage", () => {
+    it("should create a message in a room", async () => {
+      const senderId = "user-123";
+      const roomId = "room-123";
+      const content = "Hello world";
+
+      const mockMessage = {
+        id: "msg-123",
+        roomId,
+        senderId,
+        content,
+        createdAt: new Date(),
+      };
+
+      mockDb.returning.mockResolvedValue([mockMessage]);
+
+      const result = await service.createMessage(senderId, roomId, {
+        content,
+      });
+
+      expect(result.content).toBe(content);
+      expect(result.senderId).toBe(senderId);
+    });
+  });
+
+  describe("leaveRoom", () => {
+    it("should remove user from room", async () => {
+      const userId = "user-123";
+      const roomId = "room-123";
+
+      // Mock membership check
+      mockDb.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi
+              .fn()
+              .mockResolvedValue([
+                { id: "member-1", userId, roomId, role: "member" },
+              ]),
+          }),
+        }),
+      });
+
+      // Mock delete (returns deleted rows)
+      mockDb.returning.mockResolvedValue([{ id: "member-1", userId, roomId }]);
+
+      await service.leaveRoom(userId, roomId);
+
+      expect(mockDb.delete).toHaveBeenCalled();
+    });
+  });
+
+  describe("deleteRoom", () => {
+    it("should delete room and cascade delete members/messages", async () => {
+      const roomId = "room-123";
+
+      mockDb.returning.mockResolvedValue([{ id: roomId }]);
+
+      await service.deleteRoom(roomId);
+
+      expect(mockDb.delete).toHaveBeenCalled();
     });
   });
 });

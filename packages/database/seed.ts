@@ -1,12 +1,6 @@
 import "dotenv/config";
 import { keys } from "./keys";
 import { account, session, user, verification } from "./schemas/better-auth";
-import {
-  listing,
-  listingStatusEnum,
-  listingTypeEnum,
-  propertyTypeEnum,
-} from "./schemas/listings";
 import { createDrizzle } from "./index";
 
 async function main() {
@@ -17,11 +11,6 @@ async function main() {
   }
 
   const db = await createDrizzle(keys());
-
-  console.log("Resetting database...");
-  await db.execute(
-    'TRUNCATE TABLE account, session, verification, listing, "user" RESTART IDENTITY CASCADE;',
-  );
 
   const users = Array.from({ length: 20 }, (_, index) => {
     const id = `user-${index + 1}`;
@@ -85,32 +74,7 @@ async function main() {
     })),
   );
 
-  console.log("Seeding listings...");
-  const propertyTypes = propertyTypeEnum.enumValues;
-  const listingTypes = listingTypeEnum.enumValues;
-  const listingStatuses = listingStatusEnum.enumValues;
-
-  await db.insert(listing).values(
-    Array.from({ length: 15 }, (_, index) => ({
-      id: `listing-${index + 1}`,
-      title: `Sample Listing ${index + 1}`,
-      description: `Demo listing description ${index + 1}`,
-      price: `${(index + 1) * 1000000}`,
-      city: "Lagos",
-      state: "Lagos",
-      propertyType: propertyTypes[index % propertyTypes.length],
-      listingType: listingTypes[index % listingTypes.length],
-      bedrooms: index % 4 === 0 ? null : (index % 5) + 1,
-      bathrooms: index % 3 === 0 ? null : (index % 4) + 1,
-      images: [
-        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80",
-      ],
-      status: listingStatuses[0],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      agentId: users[index % users.length]?.id ?? null,
-    })),
-  );
+  // TODO: Seed chat rooms, messages, etc.
 
   console.log("Seed complete.");
   process.exit(0);

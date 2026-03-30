@@ -6,7 +6,6 @@ import { RedisModule } from "./modules/redis/redis.module.js";
 import { EmailModule } from "./modules/email/email.module.js";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
-import { ListingsModule } from "./app/listings/listings.module.js";
 import { ChatModule } from "./app/chat/chat.module.js";
 import { ConfigModule } from "@nestjs/config";
 import { appConfig } from "./app.config.ts";
@@ -23,7 +22,6 @@ import { appConfig } from "./app.config.ts";
     BullMqModule,
     DrizzleModule,
     EmailModule,
-    ListingsModule,
     ChatModule,
   ],
   controllers: [AppController],

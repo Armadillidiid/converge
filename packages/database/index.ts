@@ -15,13 +15,11 @@ export async function createDrizzle(config: z.infer<typeof dbSchema>) {
         resourceArn: config.DB_RESOURCE_ARN!,
       },
       schema,
-      logger: true,
     });
   }
 
   return dPostgres(config.DB_URL!, {
     schema,
-    logger: true,
   });
 }
 

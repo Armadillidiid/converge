@@ -7,21 +7,22 @@ import {
 } from "@nestjs/common";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
 import { schema, eq, and } from "@repo/database";
+import type { AuthenticatedRequest } from "#src/types/authenticated-request.js";
 
 @Injectable()
 export class ChatMembershipGuard implements CanActivate {
   constructor(private readonly drizzle: DrizzleService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const userId = request.user?.user?.id;
-    const roomId = request.params.id;
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const userId = request.user?.id;
+    const roomId = request.params["id"];
 
     if (!userId) {
       throw new ForbiddenException("User not authenticated");
     }
 
-    if (!roomId) {
+    if (!roomId || Array.isArray(roomId)) {
       throw new NotFoundException("Room ID not provided");
     }
 
@@ -49,15 +50,15 @@ export class ChatOwnershipGuard implements CanActivate {
   constructor(private readonly drizzle: DrizzleService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const userId = request.user?.user?.id;
-    const roomId = request.params.id;
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const userId = request.user?.id;
+    const roomId = request.params["id"];
 
     if (!userId) {
       throw new ForbiddenException("User not authenticated");
     }
 
-    if (!roomId) {
+    if (!roomId || Array.isArray(roomId)) {
       throw new NotFoundException("Room ID not provided");
     }
 

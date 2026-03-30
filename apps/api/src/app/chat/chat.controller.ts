@@ -4,22 +4,31 @@ import {
   Get,
   Body,
   UseGuards,
-  Req,
   Param,
   Delete,
 } from "@nestjs/common";
-import type { Request } from "express";
+import { z } from "zod";
 import { ChatService } from "./chat.service.js";
 import { AuthGuard } from "#src/modules/better-auth/guards/auth.guard.js";
+import { Session } from "#src/modules/better-auth/decorators.js";
 import { ChatMembershipGuard } from "./chat.guard.js";
 import type { UserSession } from "#src/modules/better-auth/guards/auth.guard.js";
+import {
+  createRoomSchema,
+  createMessageSchema,
+  inviteMemberSchema,
+  getMessagesSchema,
+  roomSchema,
+  roomWithMembersSchema,
+  roomMemberSchema,
+  paginatedMessagesSchema,
+  messageSchema,
+  invitationSchema,
+} from "./chat.contract.js";
 
-interface CreateRoomDto {
-  name: string;
-}
-
-interface CreateMessageDto {
-  content: string;
+interface SuccessResponse<T> {
+  success: true;
+  data: T;
 }
 
 @Controller("chat")
@@ -29,120 +38,160 @@ export class ChatController {
 
   @Post("rooms")
   async createRoom(
-    @Req() req: Request & { user: UserSession },
-    @Body() body: CreateRoomDto,
-  ) {
-    const room = await this.chatService.createRoom(req.user.user.id, body);
-    return { success: true, data: room };
+    @Session() session: UserSession,
+    @Body() body: unknown,
+  ): Promise<SuccessResponse<z.infer<typeof roomSchema>>> {
+    const data = createRoomSchema.parse(body);
+    const room = await this.chatService.createRoom(session.user.id, data);
+    return {
+      success: true,
+      data: room as unknown as z.infer<typeof roomSchema>,
+    };
   }
 
   @Get("rooms")
-  async getRooms(@Req() req: Request & { user: UserSession }) {
-    const rooms = await this.chatService.getRooms(req.user.user.id);
-    return { success: true, data: rooms };
+  async getRooms(
+    @Session() session: UserSession,
+  ): Promise<SuccessResponse<z.infer<typeof roomSchema>[]>> {
+    const rooms = await this.chatService.getRooms(session.user.id);
+    return {
+      success: true,
+      data: rooms as unknown as z.infer<typeof roomSchema>[],
+    };
   }
 
   @Get("rooms/:id")
   @UseGuards(ChatMembershipGuard)
   async getRoom(
-    @Req() req: Request & { user: UserSession },
+    @Session() session: UserSession,
     @Param("id") roomId: string,
-  ) {
-    const room = await this.chatService.getRoom(req.user.user.id, roomId);
-    return { success: true, data: room };
+  ): Promise<SuccessResponse<z.infer<typeof roomWithMembersSchema>>> {
+    const room = await this.chatService.getRoom(session.user.id, roomId);
+    return {
+      success: true,
+      data: room as unknown as z.infer<typeof roomWithMembersSchema>,
+    };
   }
 
   @Get("rooms/:id/members")
   @UseGuards(ChatMembershipGuard)
-  async getMembers(@Param("id") roomId: string) {
+  async getMembers(
+    @Param("id") roomId: string,
+  ): Promise<SuccessResponse<z.infer<typeof roomMemberSchema>[]>> {
     const members = await this.chatService.getMembers(roomId);
-    return { success: true, data: members };
+    return {
+      success: true,
+      data: members as unknown as z.infer<typeof roomMemberSchema>[],
+    };
   }
 
   @Get("rooms/:id/messages")
   @UseGuards(ChatMembershipGuard)
   async getMessages(
     @Param("id") roomId: string,
-    @Body() body: { limit?: number; cursor?: string | undefined },
-  ) {
+    @Body() body: unknown,
+  ): Promise<SuccessResponse<z.infer<typeof paginatedMessagesSchema>>> {
+    const data = getMessagesSchema.parse(body);
     const messages = await this.chatService.getMessages(roomId, {
-      limit: body.limit ?? 50,
-      cursor: body.cursor,
+      limit: data.limit ?? 50,
+      cursor: data.cursor,
     });
-    return { success: true, data: messages };
+    return {
+      success: true,
+      data: messages as unknown as z.infer<typeof paginatedMessagesSchema>,
+    };
   }
 
   @Post("rooms/:id/messages")
   @UseGuards(ChatMembershipGuard)
   async createMessage(
-    @Req() req: Request & { user: UserSession },
+    @Session() session: UserSession,
     @Param("id") roomId: string,
-    @Body() body: CreateMessageDto,
-  ) {
+    @Body() body: unknown,
+  ): Promise<SuccessResponse<z.infer<typeof messageSchema>>> {
+    const data = createMessageSchema.parse(body);
     const message = await this.chatService.createMessage(
-      req.user.user.id,
+      session.user.id,
       roomId,
-      body,
+      data,
     );
-    return { success: true, data: message };
+    return {
+      success: true,
+      data: message as unknown as z.infer<typeof messageSchema>,
+    };
   }
 
   @Post("rooms/:id/invite")
   async inviteMember(
-    @Req() req: Request & { user: UserSession },
+    @Session() session: UserSession,
     @Param("id") roomId: string,
-    @Body() body: { inviteeId: string },
-  ) {
+    @Body() body: unknown,
+  ): Promise<SuccessResponse<z.infer<typeof invitationSchema>>> {
+    const data = inviteMemberSchema.parse(body);
     const invitation = await this.chatService.inviteMember(
-      req.user.user.id,
+      session.user.id,
       roomId,
-      body.inviteeId,
+      data.inviteeId,
     );
-    return { success: true, data: invitation };
+    return {
+      success: true,
+      data: invitation as unknown as z.infer<typeof invitationSchema>,
+    };
   }
 
   @Get("invitations")
-  async getInvitations(@Req() req: Request & { user: UserSession }) {
-    const invitations = await this.chatService.getInvitations(req.user.user.id);
-    return { success: true, data: invitations };
+  async getInvitations(
+    @Session() session: UserSession,
+  ): Promise<SuccessResponse<z.infer<typeof invitationSchema>[]>> {
+    const invitations = await this.chatService.getInvitations(session.user.id);
+    return {
+      success: true,
+      data: invitations as unknown as z.infer<typeof invitationSchema>[],
+    };
   }
 
   @Post("invitations/:id/accept")
   async acceptInvitation(
-    @Req() req: Request & { user: UserSession },
+    @Session() session: UserSession,
     @Param("id") invitationId: string,
-  ) {
+  ): Promise<SuccessResponse<z.infer<typeof invitationSchema>>> {
     const invitation = await this.chatService.acceptInvitation(
-      req.user.user.id,
+      session.user.id,
       invitationId,
     );
-    return { success: true, data: invitation };
+    return {
+      success: true,
+      data: invitation as unknown as z.infer<typeof invitationSchema>,
+    };
   }
 
   @Post("invitations/:id/decline")
   async declineInvitation(
-    @Req() req: Request & { user: UserSession },
+    @Session() session: UserSession,
     @Param("id") invitationId: string,
-  ) {
+  ): Promise<SuccessResponse<z.infer<typeof invitationSchema>>> {
     const invitation = await this.chatService.declineInvitation(
-      req.user.user.id,
+      session.user.id,
       invitationId,
     );
-    return { success: true, data: invitation };
+    return {
+      success: true,
+      data: invitation as unknown as z.infer<typeof invitationSchema>,
+    };
   }
 
   @Post("rooms/:id/leave")
   @UseGuards(ChatMembershipGuard)
   async leaveRoom(
-    @Req() req: Request & { user: UserSession },
+    @Session() session: UserSession,
     @Param("id") roomId: string,
-  ) {
-    await this.chatService.leaveRoom(req.user.user.id, roomId);
+  ): Promise<{ success: true }> {
+    await this.chatService.leaveRoom(session.user.id, roomId);
     return { success: true };
   }
 
   @Delete("rooms/:id")
-  async deleteRoom(@Param("id") roomId: string) {
+  async deleteRoom(@Param("id") roomId: string): Promise<{ success: true }> {
     await this.chatService.deleteRoom(roomId);
     return { success: true };
   }

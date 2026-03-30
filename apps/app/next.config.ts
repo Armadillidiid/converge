@@ -4,8 +4,6 @@ import type { NextConfig } from "next";
 import { env } from "@/env";
 
 let nextConfig: NextConfig = config;
-const isWaitlistModeEnabled =
-  env.WAITLIST_MODE ?? env.VERCEL_ENV === "production";
 
 if (env.VERCEL) {
   nextConfig = withSentry(nextConfig);
@@ -15,28 +13,26 @@ if (env.ANALYZE === "true") {
   nextConfig = withAnalyzer(nextConfig);
 }
 
-if (isWaitlistModeEnabled) {
-  const previousRedirects = nextConfig.redirects;
+const previousRedirects = nextConfig.redirects;
 
-  nextConfig = {
-    ...nextConfig,
-    async redirects() {
-      const existingRedirects = previousRedirects
-        ? typeof previousRedirects === "function"
-          ? await previousRedirects()
-          : previousRedirects
-        : [];
+nextConfig = {
+  ...nextConfig,
+  async redirects() {
+    const existingRedirects = previousRedirects
+      ? typeof previousRedirects === "function"
+        ? await previousRedirects()
+        : previousRedirects
+      : [];
 
-      return [
-        ...existingRedirects,
-        {
-          source: "/",
-          destination: "/chat",
-          permanent: false,
-        },
-      ];
-    },
-  };
-}
+    return [
+      ...existingRedirects,
+      {
+        source: "/",
+        destination: "/chat",
+        permanent: true,
+      },
+    ];
+  },
+};
 
 export default nextConfig;

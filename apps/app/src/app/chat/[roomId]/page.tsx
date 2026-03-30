@@ -1,18 +1,17 @@
-"use client";
+import { auth } from "@/shared/lib/auth";
+import { redirect, RedirectType } from "next/navigation";
+import { ChatIdView } from "@/modules/chat/chat-id.view";
 
-import { useParams } from "next/navigation";
-import { ChatView, RoomListSidebar } from "@modules/chat";
+export default async function RoomPage({
+  params,
+}: {
+  params: Promise<{ roomId: string }>;
+}) {
+  const { roomId } = await params;
+  const session = await auth.getSession();
+  if (!session) {
+    redirect("/auth/sign-in", RedirectType.replace);
+  }
 
-export default function RoomPage() {
-  const params = useParams();
-  const roomId = params.roomId as string;
-
-  return (
-    <div className="flex h-[calc(100vh-4rem)]">
-      <RoomListSidebar activeRoomId={roomId} onRoomSelect={() => {}} />
-      <div className="flex-1">
-        <ChatView roomId={roomId} />
-      </div>
-    </div>
-  );
+  return <ChatIdView roomId={roomId} />;
 }

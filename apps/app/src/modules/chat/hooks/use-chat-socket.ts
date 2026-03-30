@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useChatContext } from "../lib/chat-provider";
 import type {
   NewMessageEvent,
   PresenceEvent,
   TypingEvent,
 } from "../types/chat.types";
+import { useChatContext } from "@/shared/lib/chat-provider";
 
 export function useChatSocket(roomId: string) {
   const { socket, isConnected } = useChatContext();

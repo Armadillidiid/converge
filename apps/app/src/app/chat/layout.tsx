@@ -1,4 +1,4 @@
-import { ChatProvider } from "@modules/chat";
+import { ChatProvider } from "@/shared/lib/chat-provider";
 import type { ReactNode } from "react";
 
 type ChatLayoutProperties = {

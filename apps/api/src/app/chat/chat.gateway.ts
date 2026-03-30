@@ -3,31 +3,43 @@ import {
   WebSocketServer,
   SubscribeMessage,
   ConnectedSocket,
+  MessageBody,
   type OnGatewayConnection,
   type OnGatewayDisconnect,
 } from "@nestjs/websockets";
 import { Injectable, Logger, UseGuards } from "@nestjs/common";
 import type { Server, Socket } from "socket.io";
-import { SocketIOAuthGuard } from "#src/modules/better-auth/guards/socket-io-auth.guard.js";
 import type { UserSession } from "#src/modules/better-auth/guards/auth.guard.js";
 import { ChatService } from "./chat.service.js";
 import { ChatPresenceService } from "./chat-presence.service.js";
 import { ChatTypingService } from "./chat-typing.service.js";
+import { SocketIOAuthService } from "#src/modules/better-auth/guards/socket-io-auth.service.js";
+import { SocketIOAuthGuard } from "#src/modules/better-auth/guards/socket-io-auth.guard.js";
+import {
+  wsJoinRoomSchema,
+  wsLeaveRoomSchema,
+  wsSendMessageSchema,
+  wsTypingSchema,
+  type WsJoinRoomInput,
+  type WsLeaveRoomInput,
+  type WsSendMessageInput,
+  type WsTypingInput,
+} from "./chat.dto.js";
 
 interface AuthenticatedSocket extends Socket {
   data: {
     userId: string;
     userName: string;
+    session?: UserSession;
   };
-  request: any;
 }
 
 @Injectable()
+@UseGuards(SocketIOAuthGuard)
 @WebSocketGateway({
   cors: { origin: "*" },
-  namespace: "/chat",
+  namespace: "/api/chat",
 })
-@UseGuards(SocketIOAuthGuard)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
@@ -38,31 +50,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly chatService: ChatService,
     private readonly presenceService: ChatPresenceService,
     private readonly typingService: ChatTypingService,
+    private readonly authService: SocketIOAuthService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
+    this.logger.log(`Client connecting: ${client.id}`);
+
     try {
-      const user = (client.request as any).user as UserSession;
-      if (!user) {
+      const session = await this.authService.authenticateClient(client);
+      if (!session) {
+        this.logger.warn(`No session found for ${client.id}`);
         client.disconnect();
         return;
       }
 
-      client.data = {
-        userId: user.user.id,
-        userName: user.user.name,
-      };
-
       // Get user's rooms and join them
-      const rooms = await this.chatService.getRooms(user.user.id);
+      const rooms = await this.chatService.getRooms(session.user.id);
       for (const room of rooms) {
         await client.join(`room:${room.id}`);
-        await this.presenceService.joinRoom(room.id, user.user.id);
+        await this.presenceService.joinRoom(room.id, session.user.id);
       }
 
-      await this.presenceService.setUserOnline(user.user.id, client.id);
+      await this.presenceService.setUserOnline(session.user.id, client.id);
 
-      this.logger.log(`User ${user.user.id} connected`);
+      this.logger.log(`User ${session.user.id} connected`);
     } catch (error) {
       this.logger.error("Connection error:", error);
       client.disconnect();
@@ -85,12 +96,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("join_room")
   async handleJoinRoom(
     @ConnectedSocket() client: AuthenticatedSocket,
-    payload: { roomId: string },
+    @MessageBody() payload: unknown,
   ) {
-    const userId = client.data.userId;
-    const { roomId } = payload;
+    const parsed = wsJoinRoomSchema.safeParse(payload);
+    if (!parsed.success) {
+      client.emit("error", { message: "Invalid payload" });
+      return;
+    }
 
-    // Verify membership
+    const { roomId } = parsed.data as WsJoinRoomInput;
+    const userId = client.data.userId;
+
     const membership = await this.chatService.getMembers(roomId);
     const isMember = membership.some((m) => m.userId === userId);
 
@@ -102,7 +118,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await client.join(`room:${roomId}`);
     await this.presenceService.joinRoom(roomId, userId);
 
-    // Broadcast presence to room
     this.server.to(`room:${roomId}`).emit("user:presence", {
       userId,
       userName: client.data.userName,
@@ -114,10 +129,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("leave_room")
   async handleLeaveRoom(
     @ConnectedSocket() client: AuthenticatedSocket,
-    payload: { roomId: string },
+    @MessageBody() payload: unknown,
   ) {
+    const parsed = wsLeaveRoomSchema.safeParse(payload);
+    if (!parsed.success) {
+      client.emit("error", { message: "Invalid payload" });
+      return;
+    }
+
+    const { roomId } = parsed.data as WsLeaveRoomInput;
     const userId = client.data.userId;
-    const { roomId } = payload;
 
     await client.leave(`room:${roomId}`);
     await this.presenceService.leaveRoom(roomId, userId);
@@ -132,21 +153,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("send_message")
   async handleSendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
-    payload: { roomId: string; content: string },
+    @MessageBody() payload: unknown,
   ) {
-    const userId = client.data.userId;
-    const { roomId, content } = payload;
-
-    if (!content || content.trim().length === 0) {
+    const parsed = wsSendMessageSchema.safeParse(payload);
+    if (!parsed.success) {
+      client.emit("error", { message: "Invalid payload" });
       return;
     }
 
-    // Save message to DB
+    const { roomId, content } = parsed.data as WsSendMessageInput;
+    const userId = client.data.userId;
+
     const message = await this.chatService.createMessage(userId, roomId, {
       content: content.trim(),
     });
 
-    // Broadcast to room
     this.server.to(`room:${roomId}`).emit("message:new", {
       id: message.id,
       roomId: message.roomId,
@@ -160,14 +181,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("typing_start")
   async handleTypingStart(
     @ConnectedSocket() client: AuthenticatedSocket,
-    payload: { roomId: string },
+    @MessageBody() payload: unknown,
   ) {
+    const parsed = wsTypingSchema.safeParse(payload);
+    if (!parsed.success) {
+      client.emit("error", { message: "Invalid payload" });
+      return;
+    }
+
+    const { roomId } = parsed.data as WsTypingInput;
     const userId = client.data.userId;
-    const { roomId } = payload;
 
     await this.typingService.setTyping(roomId, userId);
 
-    // Broadcast to room (excluding sender)
     client.to(`room:${roomId}`).emit("user:typing", {
       userId,
       userName: client.data.userName,
@@ -179,10 +205,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("typing_stop")
   async handleTypingStop(
     @ConnectedSocket() client: AuthenticatedSocket,
-    payload: { roomId: string },
+    @MessageBody() payload: unknown,
   ) {
+    const parsed = wsTypingSchema.safeParse(payload);
+    if (!parsed.success) {
+      client.emit("error", { message: "Invalid payload" });
+      return;
+    }
+
+    const { roomId } = parsed.data as WsTypingInput;
     const userId = client.data.userId;
-    const { roomId } = payload;
 
     await this.typingService.clearTyping(roomId, userId);
 

@@ -8,7 +8,7 @@ export class ChatTypingService {
   constructor(private readonly redis: RedisService) {}
 
   private getClient() {
-    return (this.redis as any).client;
+    return this.redis.redis;
   }
 
   async setTyping(roomId: string, userId: string): Promise<void> {

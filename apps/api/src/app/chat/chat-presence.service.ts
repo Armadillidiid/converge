@@ -6,7 +6,7 @@ export class ChatPresenceService {
   constructor(private readonly redis: RedisService) {}
 
   private getClient() {
-    return (this.redis as any).client;
+    return this.redis.redis;
   }
 
   async setUserOnline(userId: string, socketId: string): Promise<void> {

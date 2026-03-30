@@ -7,10 +7,9 @@ let socket: Socket | null = null;
 export function getSocket(): Socket {
   if (!socket) {
     const token = readAuthTokenFromDocumentCookie();
+    // Using auth query param instead of headers because Native WebSocket API doesn't support custom headers
     socket = io(`${env.NEXT_PUBLIC_API_BASE_URL}/chat`, {
-      extraHeaders: token ? { Authorization: `Bearer ${token}` } : {},
-      transports: ["websocket", "polling"],
-      autoConnect: false,
+      auth: { token: token ?? "" },
     });
   }
   return socket;

@@ -8,6 +8,8 @@ import {
 } from "./auth-module-definition.js";
 import { AuthService } from "./auth.service.js";
 import { AuthGuard } from "./guards/auth.guard.js";
+import { SocketIOAuthService } from "./guards/socket-io-auth.service.js";
+import { SocketIOAuthGuard } from "./guards/socket-io-auth.guard.js";
 import { MODULE_OPTIONS_TOKEN } from "./constants.js";
 
 /**
@@ -29,8 +31,14 @@ import { MODULE_OPTIONS_TOKEN } from "./constants.js";
  * either as a controller-level guard or via APP_GUARD in a specific module.
  */
 @Module({
-  providers: [AuthService, AuthGuard],
-  exports: [AuthService, AuthGuard, MODULE_OPTIONS_TOKEN],
+  providers: [AuthService, AuthGuard, SocketIOAuthService, SocketIOAuthGuard],
+  exports: [
+    AuthService,
+    AuthGuard,
+    SocketIOAuthService,
+    SocketIOAuthGuard,
+    MODULE_OPTIONS_TOKEN,
+  ],
 })
 export class BetterAuthModule
   extends ConfigurableModuleClass

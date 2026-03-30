@@ -1,4 +1,8 @@
-import { Module } from "@nestjs/common";
+import {
+  Module,
+  type MiddlewareConsumer,
+  type NestModule,
+} from "@nestjs/common";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { BullMqModule } from "./modules/bullmq/bullmq.module.js";
 import { DrizzleModule } from "./modules/drizzle/drizzle.module.js";
@@ -9,6 +13,9 @@ import { AppService } from "./app.service.js";
 import { ChatModule } from "./app/chat/chat.module.js";
 import { ConfigModule } from "@nestjs/config";
 import { appConfig } from "./app.config.ts";
+import { JsonBodyMiddleware } from "./middlewares/body/json.body.middleware.js";
+import { RawBodyMiddleware } from "./middlewares/body/raw.body.middleware.js";
+import { UrlencodedBodyMiddleware } from "./middlewares/body/urlencoded.body.middleware.js";
 
 @Module({
   imports: [
@@ -27,4 +34,15 @@ import { appConfig } from "./app.config.ts";
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(RawBodyMiddleware)
+      .forRoutes("auth/(.*)")
+      .apply(UrlencodedBodyMiddleware)
+      .forRoutes("(.*)")
+      .apply(JsonBodyMiddleware)
+      .exclude("auth/(.*)")
+      .forRoutes("(.*)");
+  }
+}

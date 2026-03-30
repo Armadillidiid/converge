@@ -3,9 +3,11 @@ import {
   Post,
   Get,
   Body,
+  Query,
   UseGuards,
   Param,
   Delete,
+  UsePipes,
 } from "@nestjs/common";
 import { z } from "zod";
 import { ChatService } from "./chat.service.js";
@@ -13,6 +15,7 @@ import { AuthGuard } from "#src/modules/better-auth/guards/auth.guard.js";
 import { Session } from "#src/modules/better-auth/decorators.js";
 import { ChatMembershipGuard } from "./chat.guard.js";
 import type { UserSession } from "#src/modules/better-auth/guards/auth.guard.js";
+import { ZodValidationPipe } from "#src/lib/validation-pipe.js";
 import {
   createRoomSchema,
   createMessageSchema,
@@ -32,12 +35,12 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post("rooms")
+  @UsePipes(new ZodValidationPipe(createRoomSchema))
   async createRoom(
     @Session() session: UserSession,
-    @Body() body: unknown,
+    @Body() body: z.infer<typeof createRoomSchema>,
   ): Promise<z.infer<typeof roomSchema>> {
-    const data = createRoomSchema.parse(body);
-    return this.chatService.createRoom(session.user.id, data);
+    return this.chatService.createRoom(session.user.id, body);
   }
 
   @Get("rooms")
@@ -72,37 +75,36 @@ export class ChatController {
   @UseGuards(ChatMembershipGuard)
   async getMessages(
     @Param("id") roomId: string,
-    @Body() body: unknown,
+    @Query() query: z.infer<typeof getMessagesSchema>,
   ): Promise<z.infer<typeof paginatedMessagesSchema>> {
-    const data = getMessagesSchema.parse(body);
     return this.chatService.getMessages(roomId, {
-      limit: data.limit ?? 50,
-      cursor: data.cursor,
+      limit: query.limit ?? 50,
+      cursor: query.cursor,
     });
   }
 
   @Post("rooms/:id/messages")
   @UseGuards(ChatMembershipGuard)
+  @UsePipes(new ZodValidationPipe(createMessageSchema))
   async createMessage(
     @Session() session: UserSession,
     @Param("id") roomId: string,
-    @Body() body: unknown,
+    @Body() body: z.infer<typeof createMessageSchema>,
   ): Promise<z.infer<typeof messageSchema>> {
-    const data = createMessageSchema.parse(body);
-    return this.chatService.createMessage(session.user.id, roomId, data);
+    return this.chatService.createMessage(session.user.id, roomId, body);
   }
 
   @Post("rooms/:id/invite")
+  @UsePipes(new ZodValidationPipe(inviteMemberSchema))
   async inviteMember(
     @Session() session: UserSession,
     @Param("id") roomId: string,
-    @Body() body: unknown,
+    @Body() body: z.infer<typeof inviteMemberSchema>,
   ): Promise<z.infer<typeof invitationSchema>> {
-    const data = inviteMemberSchema.parse(body);
     return this.chatService.inviteMember(
       session.user.id,
       roomId,
-      data.inviteeId,
+      body.inviteeId,
     );
   }
 

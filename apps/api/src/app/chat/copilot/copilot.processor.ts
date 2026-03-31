@@ -5,8 +5,11 @@ import { CopilotAiService } from "./copilot-ai.service.js";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
 import { schema } from "@repo/database";
 import { COPILOT_USER_ID } from "@repo/database/constants";
-import { COPILOT_QUEUE, COPILOT_MESSAGE_JOB } from "./types.js";
-import type { CopilotMessageJob } from "./types.js";
+import {
+  COPILOT_QUEUE,
+  COPILOT_MESSAGE_JOB,
+  copilotMessageJobSchema,
+} from "./types.js";
 
 @Injectable()
 @Processor(COPILOT_QUEUE)
@@ -25,8 +28,13 @@ export class CopilotProcessor extends WorkerHost {
       return null;
     }
 
-    const data = job.data as CopilotMessageJob;
-    const { roomId, content } = data;
+    const parseResult = copilotMessageJobSchema.safeParse(job.data);
+    if (!parseResult.success) {
+      this.logger.error("Invalid job data", parseResult.error);
+      return null;
+    }
+
+    const { roomId, content } = parseResult.data;
 
     try {
       this.logger.log(`Processing copilot job for room ${roomId}`);

@@ -4,8 +4,15 @@ import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
 import { eq, desc } from "@repo/database";
 import { schema } from "@repo/database";
 import { COPILOT_USER_ID } from "@repo/database/constants";
-import { SYSTEM_PROMPT, COPILOT_MAX_CONTEXT_TOKENS } from "./constants.js";
+import {
+  SYSTEM_PROMPT,
+  COPILOT_CONTEXT_PERCENTAGE,
+  COPILOT_CONTEXT_FALLBACK,
+  COPILOT_MODEL_ID,
+  MAX_MESSAGES_FETCH,
+} from "./constants.js";
 import { TokenCounter } from "./token-counter.js";
+import { ModelInfoService } from "./model-info.service.js";
 
 interface ContextMessage {
   senderId: string;
@@ -17,11 +24,16 @@ interface ContextMessage {
 export class CopilotAiService {
   private tokenCounter: TokenCounter;
 
-  constructor(private readonly drizzle: DrizzleService) {
+  constructor(
+    private readonly drizzle: DrizzleService,
+    private readonly modelInfo: ModelInfoService,
+  ) {
     this.tokenCounter = new TokenCounter();
   }
 
   async buildContext(roomId: string): Promise<ContextMessage[]> {
+    const contextLimit = await this.getContextLimit();
+
     const messages = await this.drizzle.db
       .select({
         senderId: schema.chatMessage.senderId,
@@ -30,21 +42,22 @@ export class CopilotAiService {
       })
       .from(schema.chatMessage)
       .where(eq(schema.chatMessage.roomId, roomId))
-      .orderBy(desc(schema.chatMessage.createdAt));
+      .orderBy(desc(schema.chatMessage.createdAt))
+      .limit(MAX_MESSAGES_FETCH);
 
     const context: ContextMessage[] = [];
     let totalTokens = 0;
 
     for (const msg of messages) {
       const msgTokens = this.tokenCounter.countTokens(msg.content) + 4;
-      if (totalTokens + msgTokens > COPILOT_MAX_CONTEXT_TOKENS) {
+      if (totalTokens + msgTokens > contextLimit) {
         break;
       }
-      context.unshift(msg);
+      context.push(msg);
       totalTokens += msgTokens;
     }
 
-    return context;
+    return context.reverse();
   }
 
   async generateResponse(
@@ -69,10 +82,16 @@ export class CopilotAiService {
     ];
 
     const result = await generateText({
-      model: models.chat("openai/gpt-4.1"),
+      model: models.chat(COPILOT_MODEL_ID),
       messages,
     });
 
     return result.text;
+  }
+
+  private async getContextLimit(): Promise<number> {
+    const modelInfo = await this.modelInfo.getModel(COPILOT_MODEL_ID);
+    const contextLimit = modelInfo?.limit?.context ?? COPILOT_CONTEXT_FALLBACK;
+    return Math.floor(contextLimit * COPILOT_CONTEXT_PERCENTAGE);
   }
 }

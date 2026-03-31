@@ -7,11 +7,14 @@ Instructions:
 - If unsure, say so honestly
 - Don't make up information`;
 
-export const COPILOT_MODEL_CONTEXT_LIMIT = 128_000;
+export const COPILOT_MODEL_ID = "openai/gpt-4o-mini";
 export const COPILOT_CONTEXT_PERCENTAGE = 0.8;
-export const COPILOT_MAX_CONTEXT_TOKENS = Math.floor(
-  COPILOT_MODEL_CONTEXT_LIMIT * COPILOT_CONTEXT_PERCENTAGE,
-);
 
+// Fallback context limit if model info unavailable
+export const COPILOT_CONTEXT_FALLBACK = 128_000;
+
+// Rate limiting
 export const COPILOT_RATE_LIMIT_COUNT = 5;
 export const COPILOT_RATE_LIMIT_WINDOW_MS = 60_000;
+
+export const MAX_MESSAGES_FETCH = 500;

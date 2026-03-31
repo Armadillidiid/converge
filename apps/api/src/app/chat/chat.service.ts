@@ -30,6 +30,8 @@ import {
 import { ChatPresenceService } from "./chat-presence.service.js";
 import { ChatTypingService } from "./chat-typing.service.js";
 import { COPILOT_QUEUE, COPILOT_MESSAGE_JOB } from "./copilot/types.js";
+import { CopilotRateLimitGuard } from "./copilot/copilot-rate-limit.guard.js";
+import { COPILOT_RATE_LIMIT_WINDOW_MS } from "./copilot/constants.js";
 
 @Injectable()
 export class ChatService {
@@ -37,6 +39,7 @@ export class ChatService {
     private readonly drizzle: DrizzleService,
     private readonly presenceService: ChatPresenceService,
     private readonly typingService: ChatTypingService,
+    private readonly rateLimitGuard: CopilotRateLimitGuard,
     @InjectQueue(COPILOT_QUEUE) private readonly copilotQueue: Queue,
   ) {}
 
@@ -323,12 +326,20 @@ export class ChatService {
     }
 
     if (data.content.toLowerCase().includes("@copilot")) {
-      await this.copilotQueue.add(COPILOT_MESSAGE_JOB, {
-        messageId: message.id,
-        roomId,
-        senderId,
-        content: data.content,
-      });
+      const { allowed } = await this.rateLimitGuard.checkLimit(senderId);
+
+      const jobOptions = allowed ? {} : { delay: COPILOT_RATE_LIMIT_WINDOW_MS };
+
+      await this.copilotQueue.add(
+        COPILOT_MESSAGE_JOB,
+        {
+          messageId: message.id,
+          roomId,
+          senderId,
+          content: data.content,
+        },
+        jobOptions,
+      );
     }
 
     return messageDto.parse(message);

@@ -5,6 +5,7 @@ import { RedisModule } from "#src/modules/redis/redis.module.js";
 import { CopilotProcessor } from "./copilot.processor.js";
 import { CopilotAiService } from "./copilot-ai.service.js";
 import { CopilotRateLimitGuard } from "./copilot-rate-limit.guard.js";
+import { ModelInfoService } from "./model-info.service.js";
 import { COPILOT_QUEUE } from "./types.js";
 
 @Module({
@@ -15,7 +16,12 @@ import { COPILOT_QUEUE } from "./types.js";
     DrizzleModule,
     RedisModule,
   ],
-  providers: [CopilotProcessor, CopilotAiService, CopilotRateLimitGuard],
-  exports: [CopilotAiService, CopilotRateLimitGuard],
+  providers: [
+    CopilotProcessor,
+    CopilotAiService,
+    CopilotRateLimitGuard,
+    ModelInfoService,
+  ],
+  exports: [CopilotAiService, CopilotRateLimitGuard, ModelInfoService],
 })
 export class CopilotModule {}

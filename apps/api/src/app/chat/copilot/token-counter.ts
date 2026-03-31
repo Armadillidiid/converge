@@ -1,10 +1,14 @@
-import { encoding_for_model, type Tiktoken } from "tiktoken";
+import {
+  encoding_for_model,
+  type Tiktoken,
+  type TiktokenModel,
+} from "tiktoken";
 
 export class TokenCounter {
   private encoder: Tiktoken;
 
-  constructor() {
-    this.encoder = encoding_for_model("gpt-4o-mini");
+  constructor(modelId: TiktokenModel) {
+    this.encoder = encoding_for_model(modelId);
   }
 
   countTokens(text: string): number {

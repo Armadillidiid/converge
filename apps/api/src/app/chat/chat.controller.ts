@@ -13,7 +13,7 @@ import { z } from "zod";
 import { ChatService } from "./chat.service.js";
 import { AuthGuard } from "#src/modules/better-auth/guards/auth.guard.js";
 import { Session } from "#src/modules/better-auth/decorators.js";
-import { ChatMembershipGuard } from "./chat.guard.js";
+import { ChatMembershipGuard, ChatOwnershipGuard } from "./chat.guard.js";
 import type { UserSession } from "#src/modules/better-auth/guards/auth.guard.js";
 import { ZodValidationPipe } from "#src/lib/validation-pipe.js";
 import { chatSchemas } from "./chat.contract.js";
@@ -136,6 +136,7 @@ export class ChatController {
   }
 
   @Delete("rooms/:id")
+  @UseGuards(ChatOwnershipGuard)
   async deleteRoom(
     @Param("id") roomId: string,
   ): Promise<z.infer<typeof dto.successDto>> {

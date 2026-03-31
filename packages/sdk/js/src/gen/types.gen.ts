@@ -50,10 +50,13 @@ export type WsTypingInput = {
 };
 
 export type WsMessageNewOutput = {
+  id: string;
   roomId: string;
   senderId: string;
   senderName: string;
+  senderEmail: string;
   content: string;
+  createdAt: string;
 };
 
 export type WsUserPresenceOutput = {

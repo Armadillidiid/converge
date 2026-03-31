@@ -4,6 +4,6 @@ import type {
   WsUserTypingOutput,
 } from "@repo/sdk";
 
-export type NewMessageEvent = WsMessageNewOutput & { senderEmail?: string };
+export type NewMessageEvent = WsMessageNewOutput;
 export type PresenceEvent = WsUserPresenceOutput;
 export type TypingEvent = WsUserTypingOutput;

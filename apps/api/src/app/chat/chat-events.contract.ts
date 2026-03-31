@@ -37,10 +37,13 @@ export const wsTypingInputSchema = z.object({
 });
 
 export const wsMessageNewOutputSchema = z.object({
+  id: z.string(),
   roomId: z.string(),
   senderId: z.string(),
   senderName: z.string(),
+  senderEmail: z.string(),
   content: z.string(),
+  createdAt: z.string(),
 });
 
 export const wsUserPresenceOutputSchema = z.object({

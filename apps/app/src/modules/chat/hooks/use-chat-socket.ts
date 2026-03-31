@@ -12,6 +12,7 @@ import {
   chatGetPresenceOptions,
   chatGetTypingOptions,
 } from "@repo/sdk/tanstack";
+import { CHAT_EVENTS, SERVER_CHAT_EVENTS } from "@repo/sdk";
 
 export function useChatSocket(roomId: string) {
   const { socket, isConnected } = useChatContext();
@@ -47,7 +48,7 @@ export function useChatSocket(roomId: string) {
   useEffect(() => {
     if (!socket || !isConnected || !roomId) return;
 
-    socket.emit("join_room", { roomId });
+    socket.emit(CHAT_EVENTS.JOIN_ROOM, { roomId });
 
     const handleNewMessage = (msg: NewMessageEvent) => {
       if (msg.roomId === roomId) {
@@ -83,22 +84,22 @@ export function useChatSocket(roomId: string) {
       }
     };
 
-    socket.on("message:new", handleNewMessage);
-    socket.on("user:presence", handlePresence);
-    socket.on("user:typing", handleTyping);
+    socket.on(SERVER_CHAT_EVENTS.MESSAGE_NEW, handleNewMessage);
+    socket.on(SERVER_CHAT_EVENTS.USER_PRESENCE, handlePresence);
+    socket.on(SERVER_CHAT_EVENTS.USER_TYPING, handleTyping);
 
     return () => {
-      socket.emit("leave_room", { roomId });
-      socket.off("message:new", handleNewMessage);
-      socket.off("user:presence", handlePresence);
-      socket.off("user:typing", handleTyping);
+      socket.emit(CHAT_EVENTS.LEAVE_ROOM, { roomId });
+      socket.off(SERVER_CHAT_EVENTS.MESSAGE_NEW, handleNewMessage);
+      socket.off(SERVER_CHAT_EVENTS.USER_PRESENCE, handlePresence);
+      socket.off(SERVER_CHAT_EVENTS.USER_TYPING, handleTyping);
     };
   }, [socket, isConnected, roomId]);
 
   const sendMessage = useCallback(
     (content: string) => {
       if (socket && isConnected && roomId) {
-        socket.emit("send_message", { roomId, content });
+        socket.emit(CHAT_EVENTS.SEND_MESSAGE, { roomId, content });
       }
     },
     [socket, isConnected, roomId],
@@ -106,13 +107,13 @@ export function useChatSocket(roomId: string) {
 
   const sendTypingStart = useCallback(() => {
     if (socket && isConnected && roomId) {
-      socket.emit("typing_start", { roomId });
+      socket.emit(CHAT_EVENTS.TYPING_START, { roomId });
     }
   }, [socket, isConnected, roomId]);
 
   const sendTypingStop = useCallback(() => {
     if (socket && isConnected && roomId) {
-      socket.emit("typing_stop", { roomId });
+      socket.emit(CHAT_EVENTS.TYPING_STOP, { roomId });
     }
   }, [socket, isConnected, roomId]);
 

@@ -50,10 +50,13 @@ export const zWsTypingInput = z.object({
 });
 
 export const zWsMessageNewOutput = z.object({
+  id: z.string(),
   roomId: z.string(),
   senderId: z.string(),
   senderName: z.string(),
+  senderEmail: z.string(),
   content: z.string(),
+  createdAt: z.string(),
 });
 
 export const zWsUserPresenceOutput = z.object({

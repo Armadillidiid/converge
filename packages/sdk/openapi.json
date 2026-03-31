@@ -87,6 +87,9 @@
       "wsMessageNewOutput": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "roomId": {
             "type": "string"
           },
@@ -96,11 +99,25 @@
           "senderName": {
             "type": "string"
           },
+          "senderEmail": {
+            "type": "string"
+          },
           "content": {
+            "type": "string"
+          },
+          "createdAt": {
             "type": "string"
           }
         },
-        "required": ["roomId", "senderId", "senderName", "content"]
+        "required": [
+          "id",
+          "roomId",
+          "senderId",
+          "senderName",
+          "senderEmail",
+          "content",
+          "createdAt"
+        ]
       },
       "wsUserPresenceOutput": {
         "type": "object",

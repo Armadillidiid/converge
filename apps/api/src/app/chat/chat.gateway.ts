@@ -29,9 +29,7 @@ import {
 
 interface AuthenticatedSocket extends Socket {
   data: {
-    userId: string;
-    userName: string;
-    session?: UserSession;
+    session: UserSession;
   };
 }
 
@@ -83,8 +81,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleDisconnect(client: AuthenticatedSocket) {
     try {
-      const userId = client.data?.userId;
-      if (!userId) return;
+      if (!client.data.session?.user?.id) {
+        this.logger.warn(`No session found for ${client.id} on disconnect`);
+        return;
+      }
+      const userId = client.data.session.user.id;
 
       await this.presenceService.setUserOffline(userId, client.id);
 
@@ -105,8 +106,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    const { roomId } = parsed.data as WsJoinRoomInput;
-    const userId = client.data.userId;
+    const { roomId } = parsed.data;
+    const userId = client.data.session.user.id;
 
     const membership = await this.chatService.getMembers(roomId);
     const isMember = membership.some((m) => m.userId === userId);
@@ -121,7 +122,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.server.to(`room:${roomId}`).emit(CHAT_EVENTS.USER_PRESENCE, {
       userId,
-      userName: client.data.userName,
+      userName: client.data.session.user.name,
       roomId,
       status: "online",
     });
@@ -138,8 +139,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    const { roomId } = parsed.data as WsLeaveRoomInput;
-    const userId = client.data.userId;
+    const { roomId } = parsed.data;
+    const userId = client.data.session.user.id;
 
     await client.leave(`room:${roomId}`);
     await this.presenceService.leaveRoom(roomId, userId);
@@ -162,8 +163,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    const { roomId, content } = parsed.data as WsSendMessageInput;
-    const userId = client.data.userId;
+    const { roomId, content } = parsed.data;
+    if (!client.data.session?.user?.id) {
+      client.emit("error", { message: "Unauthorized" });
+      return;
+    }
+    const userId = client.data.session.user.id;
 
     const message = await this.chatService.createMessage(userId, roomId, {
       content: content.trim(),
@@ -173,7 +178,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       id: message.id,
       roomId,
       senderId: userId,
-      senderName: client.data.userName,
+      senderName: client.data.session.user.name,
+      senderEmail: client.data.session.user.email,
       content: message.content,
       createdAt: message.createdAt,
     });
@@ -190,14 +196,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    const { roomId } = parsed.data as WsTypingInput;
-    const userId = client.data.userId;
+    const { roomId } = parsed.data;
+    const userId = client.data.session.user.id;
 
     await this.typingService.setTyping(roomId, userId);
 
     client.to(`room:${roomId}`).emit(CHAT_EVENTS.USER_TYPING, {
       userId,
-      userName: client.data.userName,
+      userName: client.data.session.user.name,
       roomId,
       isTyping: true,
     });
@@ -214,8 +220,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    const { roomId } = parsed.data as WsTypingInput;
-    const userId = client.data.userId;
+    const { roomId } = parsed.data;
+    const userId = client.data.session.user.id;
 
     await this.typingService.clearTyping(roomId, userId);
 

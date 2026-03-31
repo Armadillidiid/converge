@@ -8,8 +8,11 @@ import {
   UploadedFile,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { experimental_transcribe, experimental_generateSpeech } from "ai";
-import { models } from "@repo/ai";
+import {
+  experimental_transcribe,
+  experimental_generateSpeech,
+  openai,
+} from "@repo/ai";
 import { AuthGuard } from "#src/modules/better-auth/guards/auth.guard.js";
 import { Session } from "#src/modules/better-auth/decorators.js";
 import type { UserSession } from "#src/modules/better-auth/guards/auth.guard.js";
@@ -36,7 +39,7 @@ export class AiVoiceController {
     }
 
     const result = await experimental_transcribe({
-      model: models.transcription("whisper-1"),
+      model: openai.transcription("whisper-1"),
       audio: file.buffer,
     });
 
@@ -50,7 +53,7 @@ export class AiVoiceController {
     @Body() body: { text: string; voice?: string },
   ): Promise<{ audio: string }> {
     const result = await experimental_generateSpeech({
-      model: models.speech("tts-1"),
+      model: openai.speech("tts-1"),
       text: body.text,
       voice: body.voice ?? "alloy",
     });

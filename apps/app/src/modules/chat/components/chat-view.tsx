@@ -8,6 +8,7 @@ import { MessageItem } from "./message-item";
 import { ChatInput } from "./chat-input";
 import { TypingIndicator } from "./typing-indicator";
 import { MembersSidebar } from "./members-sidebar";
+import { ChatHeader } from "./chat-header";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { auth } from "@/shared/lib/auth";
 import { parseISO, compareAsc } from "date-fns";
@@ -81,6 +82,8 @@ export function ChatView({ roomId }: ChatViewProperties) {
             Reconnecting...
           </div>
         )}
+
+        <ChatHeader roomId={roomId} />
 
         <ScrollArea className="flex-1 p-4">
           <div className="flex flex-col gap-2">

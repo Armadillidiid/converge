@@ -1,11 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useChatRooms } from "../hooks/use-chat-rooms";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { cn } from "@repo/design-system/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Avatar } from "./avatar";
+import { auth } from "@/shared/lib/auth";
+import { clearAuthTokenCookie } from "@/shared/lib/auth-token-cookie";
 import { CreateRoomModal } from "./create-room-modal";
 import { InvitationsModal } from "./invitations-modal";
 import { useInvitations } from "../hooks/use-invitations";
@@ -19,6 +29,8 @@ export function RoomListSidebar({
   activeRoomId,
   onRoomSelect,
 }: RoomListSidebarProperties) {
+  const router = useRouter();
+  const { data: session } = auth.useSession();
   const { roomsQuery } = useChatRooms();
   const { invitationsQuery } = useInvitations();
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -26,6 +38,12 @@ export function RoomListSidebar({
 
   const rooms = roomsQuery.data?.items ?? [];
   const invitations = invitationsQuery.data?.items ?? [];
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    clearAuthTokenCookie();
+    router.push("/");
+  };
 
   return (
     <div className="w-80 border-r flex flex-col h-full">
@@ -73,6 +91,40 @@ export function RoomListSidebar({
           </div>
         )}
       </ScrollArea>
+
+      {session?.user && (
+        <div className="border-t p-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2 h-auto py-2"
+                >
+                  <Avatar
+                    name={session.user.name ?? ""}
+                    email={session.user.email ?? ""}
+                    className="w-8 h-8"
+                  />
+                  <div className="flex flex-col text-left">
+                    <span className="text-sm font-medium">
+                      {session.user.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate max-w-[180px]">
+                      {session.user.email}
+                    </span>
+                  </div>
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => void handleSignOut()}>
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
 
       <CreateRoomModal
         open={showCreateModal}

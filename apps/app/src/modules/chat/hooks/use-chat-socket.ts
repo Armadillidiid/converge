@@ -27,6 +27,8 @@ export function useChatSocket(roomId: string) {
       }
     };
 
+    // TODO: Currently, there's no way to get the initial presence state of users in the room.
+    // We need to add an API endpoint to fetch the current presence status of users in the room when joining.
     const handlePresence = (data: PresenceEvent) => {
       if (data.roomId === roomId) {
         setOnlineUsers((prev) => {

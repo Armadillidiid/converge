@@ -174,7 +174,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       content: content.trim(),
     });
 
-    client.to(`room:${roomId}`).emit(CHAT_EVENTS.MESSAGE_NEW, {
+    this.server.to(`room:${roomId}`).emit(CHAT_EVENTS.MESSAGE_NEW, {
       id: message.id,
       roomId,
       senderId: userId,

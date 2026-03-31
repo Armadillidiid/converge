@@ -93,11 +93,7 @@ export class ChatController {
     @Param("id") roomId: string,
     @Body() body: z.infer<typeof chatSchemas.inviteMemberSchema>,
   ): Promise<z.infer<typeof dto.invitationDto>> {
-    return this.chatService.inviteMember(
-      session.user.id,
-      roomId,
-      body.inviteeId,
-    );
+    return this.chatService.inviteMember(session.user.id, roomId, body.email);
   }
 
   @Get("invitations")

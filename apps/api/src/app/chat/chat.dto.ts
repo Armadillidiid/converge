@@ -76,7 +76,7 @@ export const createMessageSchema = z.object({
 });
 
 export const inviteMemberSchema = z.object({
-  inviteeId: z.string().min(1),
+  email: z.string().email(),
 });
 
 export const getMessagesSchema = z.object({

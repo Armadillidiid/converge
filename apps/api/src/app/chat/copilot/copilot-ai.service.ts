@@ -69,7 +69,7 @@ export class CopilotAiService {
     ];
 
     const result = await generateText({
-      model: models.chat("openai/gpt-5-mini"),
+      model: models.chat("openai/gpt-4.1"),
       messages,
     });
 

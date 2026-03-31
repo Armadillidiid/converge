@@ -1,0 +1,902 @@
+{
+  "info": {
+    "title": "Converge API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "openapi": "3.1.1",
+  "components": {
+    "schemas": {
+      "ClientToServerEventName": {
+        "enum": [
+          "join_room",
+          "leave_room",
+          "send_message",
+          "typing_start",
+          "typing_stop",
+          "heartbeat",
+          "message:new",
+          "user:typing",
+          "user:presence",
+          "member:joined",
+          "member:left",
+          "room:deleted"
+        ]
+      },
+      "ServerToClientEventName": {
+        "enum": [
+          "join_room",
+          "leave_room",
+          "send_message",
+          "typing_start",
+          "typing_stop",
+          "heartbeat",
+          "message:new",
+          "user:typing",
+          "user:presence",
+          "member:joined",
+          "member:left",
+          "room:deleted"
+        ]
+      },
+      "wsJoinRoomInput": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string"
+          }
+        },
+        "required": ["roomId"]
+      },
+      "wsLeaveRoomInput": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string"
+          }
+        },
+        "required": ["roomId"]
+      },
+      "wsSendMessageInput": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 5000
+          }
+        },
+        "required": ["roomId", "content"]
+      },
+      "wsTypingInput": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string"
+          }
+        },
+        "required": ["roomId"]
+      },
+      "wsMessageNewOutput": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string"
+          },
+          "senderId": {
+            "type": "string"
+          },
+          "senderName": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": ["roomId", "senderId", "senderName", "content"]
+      },
+      "wsUserPresenceOutput": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "string"
+          },
+          "status": {
+            "enum": ["online", "offline"]
+          }
+        },
+        "required": ["userId", "roomId", "status"]
+      },
+      "wsUserTypingOutput": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "string"
+          },
+          "isTyping": {
+            "type": "boolean"
+          }
+        },
+        "required": ["userId", "roomId", "isTyping"]
+      },
+      "wsErrorOutput": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["message"]
+      }
+    }
+  },
+  "paths": {
+    "/chat/rooms": {
+      "post": {
+        "operationId": "chat.createRoom",
+        "description": "Create a new chat room",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "ownerId": {
+                      "type": "string"
+                    },
+                    "createdAt": {},
+                    "updatedAt": {}
+                  },
+                  "required": ["id", "name", "ownerId"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "chat.getRooms",
+        "description": "List user's chat rooms (paginated)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "ownerId": {
+                            "type": "string"
+                          },
+                          "createdAt": {},
+                          "updatedAt": {}
+                        },
+                        "required": ["id", "name", "ownerId"]
+                      }
+                    }
+                  },
+                  "required": ["items"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}": {
+      "get": {
+        "operationId": "chat.getRoom",
+        "description": "Get room details with members",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "ownerId": {
+                      "type": "string"
+                    },
+                    "createdAt": {},
+                    "updatedAt": {},
+                    "members": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "userId": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "enum": ["owner", "member"]
+                          },
+                          "joinedAt": {},
+                          "user": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "email": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["id", "name", "email"]
+                          }
+                        },
+                        "required": ["id", "userId", "role", "user"]
+                      }
+                    }
+                  },
+                  "required": ["id", "name", "ownerId", "members"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "chat.deleteRoom",
+        "description": "Delete room (owner only)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["success"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}/members": {
+      "get": {
+        "operationId": "chat.getMembers",
+        "description": "List room members",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "userId": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "enum": ["owner", "member"]
+                          },
+                          "joinedAt": {},
+                          "user": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "email": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["id", "name", "email"]
+                          }
+                        },
+                        "required": ["id", "userId", "role", "user"]
+                      }
+                    }
+                  },
+                  "required": ["items"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}/messages": {
+      "get": {
+        "operationId": "chat.getMessages",
+        "description": "Get room messages (paginated)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "allowEmptyValue": true,
+            "allowReserved": true
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "allowEmptyValue": true,
+            "allowReserved": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "roomId": {
+                            "type": "string"
+                          },
+                          "senderId": {
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "createdAt": {}
+                        },
+                        "required": ["id", "roomId", "senderId", "content"]
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["items"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}/presence": {
+      "get": {
+        "operationId": "chat.getPresence",
+        "description": "Get online users in a room",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "onlineUsers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userId": {
+                            "type": "string"
+                          },
+                          "userName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["userId", "userName"]
+                      }
+                    }
+                  },
+                  "required": ["onlineUsers"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}/typing": {
+      "get": {
+        "operationId": "chat.getTyping",
+        "description": "Get currently typing users in a room",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "typingUsers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userId": {
+                            "type": "string"
+                          },
+                          "userName": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["userId", "userName"]
+                      }
+                    }
+                  },
+                  "required": ["typingUsers"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}/invite": {
+      "post": {
+        "operationId": "chat.inviteMember",
+        "description": "Invite user to room (owner only)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "required": ["email"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "roomId": {
+                      "type": "string"
+                    },
+                    "inviterId": {
+                      "type": "string"
+                    },
+                    "inviteeId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": ["pending", "accepted", "declined"]
+                    },
+                    "expiresAt": {},
+                    "createdAt": {}
+                  },
+                  "required": [
+                    "id",
+                    "roomId",
+                    "inviterId",
+                    "inviteeId",
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/invitations": {
+      "get": {
+        "operationId": "chat.getInvitations",
+        "description": "List user's pending invitations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "roomId": {
+                            "type": "string"
+                          },
+                          "inviterId": {
+                            "type": "string"
+                          },
+                          "inviteeId": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "enum": ["pending", "accepted", "declined"]
+                          },
+                          "expiresAt": {},
+                          "createdAt": {}
+                        },
+                        "required": [
+                          "id",
+                          "roomId",
+                          "inviterId",
+                          "inviteeId",
+                          "status"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["items"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/invitations/{id}/accept": {
+      "post": {
+        "operationId": "chat.acceptInvitation",
+        "description": "Accept an invitation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "roomId": {
+                      "type": "string"
+                    },
+                    "inviterId": {
+                      "type": "string"
+                    },
+                    "inviteeId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": ["pending", "accepted", "declined"]
+                    },
+                    "expiresAt": {},
+                    "createdAt": {}
+                  },
+                  "required": [
+                    "id",
+                    "roomId",
+                    "inviterId",
+                    "inviteeId",
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/invitations/{id}/decline": {
+      "post": {
+        "operationId": "chat.declineInvitation",
+        "description": "Decline an invitation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "roomId": {
+                      "type": "string"
+                    },
+                    "inviterId": {
+                      "type": "string"
+                    },
+                    "inviteeId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": ["pending", "accepted", "declined"]
+                    },
+                    "expiresAt": {},
+                    "createdAt": {}
+                  },
+                  "required": [
+                    "id",
+                    "roomId",
+                    "inviterId",
+                    "inviteeId",
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{id}/leave": {
+      "post": {
+        "operationId": "chat.leaveRoom",
+        "description": "Leave a room",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["success"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

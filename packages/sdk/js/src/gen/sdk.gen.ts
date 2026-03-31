@@ -5,8 +5,6 @@ import { client } from "./client.gen";
 import type {
   ChatAcceptInvitationData,
   ChatAcceptInvitationResponses,
-  ChatCreateMessageData,
-  ChatCreateMessageResponses,
   ChatCreateRoomData,
   ChatCreateRoomResponses,
   ChatDeclineInvitationData,
@@ -19,10 +17,14 @@ import type {
   ChatGetMembersResponses,
   ChatGetMessagesData,
   ChatGetMessagesResponses,
+  ChatGetPresenceData,
+  ChatGetPresenceResponses,
   ChatGetRoomData,
   ChatGetRoomResponses,
   ChatGetRoomsData,
   ChatGetRoomsResponses,
+  ChatGetTypingData,
+  ChatGetTypingResponses,
   ChatInviteMemberData,
   ChatInviteMemberResponses,
   ChatLeaveRoomData,
@@ -31,8 +33,6 @@ import type {
 import {
   zChatAcceptInvitationData,
   zChatAcceptInvitationResponse,
-  zChatCreateMessageData,
-  zChatCreateMessageResponse,
   zChatCreateRoomData,
   zChatCreateRoomResponse,
   zChatDeclineInvitationData,
@@ -45,10 +45,14 @@ import {
   zChatGetMembersResponse,
   zChatGetMessagesData,
   zChatGetMessagesResponse,
+  zChatGetPresenceData,
+  zChatGetPresenceResponse,
   zChatGetRoomData,
   zChatGetRoomResponse,
   zChatGetRoomsData,
   zChatGetRoomsResponse,
+  zChatGetTypingData,
+  zChatGetTypingResponse,
   zChatInviteMemberData,
   zChatInviteMemberResponse,
   zChatLeaveRoomData,
@@ -229,26 +233,42 @@ export class Chat extends HeyApiClient {
   }
 
   /**
-   * Send a message
+   * Get online users in a room
    */
-  public createMessage<ThrowOnError extends boolean = false>(
-    options: Options<ChatCreateMessageData, ThrowOnError>,
+  public getPresence<ThrowOnError extends boolean = false>(
+    options: Options<ChatGetPresenceData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
-      ChatCreateMessageResponses,
+    return (options.client ?? this.client).get<
+      ChatGetPresenceResponses,
       unknown,
       ThrowOnError
     >({
       requestValidator: async (data) =>
-        await zChatCreateMessageData.parseAsync(data),
+        await zChatGetPresenceData.parseAsync(data),
       responseValidator: async (data) =>
-        await zChatCreateMessageResponse.parseAsync(data),
-      url: "/chat/rooms/{id}/messages",
+        await zChatGetPresenceResponse.parseAsync(data),
+      url: "/chat/rooms/{id}/presence",
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+    });
+  }
+
+  /**
+   * Get currently typing users in a room
+   */
+  public getTyping<ThrowOnError extends boolean = false>(
+    options: Options<ChatGetTypingData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).get<
+      ChatGetTypingResponses,
+      unknown,
+      ThrowOnError
+    >({
+      requestValidator: async (data) =>
+        await zChatGetTypingData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zChatGetTypingResponse.parseAsync(data),
+      url: "/chat/rooms/{id}/typing",
+      ...options,
     });
   }
 

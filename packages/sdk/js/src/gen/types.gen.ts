@@ -10,9 +10,21 @@ export type ClientToServerEventName =
   | "send_message"
   | "typing_start"
   | "typing_stop"
-  | "heartbeat";
+  | "heartbeat"
+  | "message:new"
+  | "user:typing"
+  | "user:presence"
+  | "member:joined"
+  | "member:left"
+  | "room:deleted";
 
 export type ServerToClientEventName =
+  | "join_room"
+  | "leave_room"
+  | "send_message"
+  | "typing_start"
+  | "typing_stop"
+  | "heartbeat"
   | "message:new"
   | "user:typing"
   | "user:presence"
@@ -233,32 +245,53 @@ export type ChatGetMessagesResponses = {
 export type ChatGetMessagesResponse =
   ChatGetMessagesResponses[keyof ChatGetMessagesResponses];
 
-export type ChatCreateMessageData = {
-  body: {
-    content: string;
-  };
+export type ChatGetPresenceData = {
+  body?: never;
   path: {
     id: string;
   };
   query?: never;
-  url: "/chat/rooms/{id}/messages";
+  url: "/chat/rooms/{id}/presence";
 };
 
-export type ChatCreateMessageResponses = {
+export type ChatGetPresenceResponses = {
   /**
    * OK
    */
   200: {
-    id: string;
-    roomId: string;
-    senderId: string;
-    content: string;
-    createdAt?: unknown;
+    onlineUsers: Array<{
+      userId: string;
+      userName: string;
+    }>;
   };
 };
 
-export type ChatCreateMessageResponse =
-  ChatCreateMessageResponses[keyof ChatCreateMessageResponses];
+export type ChatGetPresenceResponse =
+  ChatGetPresenceResponses[keyof ChatGetPresenceResponses];
+
+export type ChatGetTypingData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/chat/rooms/{id}/typing";
+};
+
+export type ChatGetTypingResponses = {
+  /**
+   * OK
+   */
+  200: {
+    typingUsers: Array<{
+      userId: string;
+      userName: string;
+    }>;
+  };
+};
+
+export type ChatGetTypingResponse =
+  ChatGetTypingResponses[keyof ChatGetTypingResponses];
 
 export type ChatInviteMemberData = {
   body: {

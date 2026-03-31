@@ -4,7 +4,7 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
-import { eq, and, desc } from "@repo/database";
+import { eq, and, desc, inArray } from "@repo/database";
 import { schema } from "@repo/database";
 import {
   roomDto,
@@ -24,10 +24,16 @@ import {
   type CreateRoomInput,
   type CreateMessageInput,
 } from "./chat.contract.js";
+import { ChatPresenceService } from "./chat-presence.service.js";
+import { ChatTypingService } from "./chat-typing.service.js";
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly drizzle: DrizzleService) {}
+  constructor(
+    private readonly drizzle: DrizzleService,
+    private readonly presenceService: ChatPresenceService,
+    private readonly typingService: ChatTypingService,
+  ) {}
 
   async createRoom(userId: string, data: CreateRoomInput): Promise<RoomDto> {
     const [room] = await this.drizzle.db
@@ -337,5 +343,49 @@ export class ChatService {
     await this.drizzle.db
       .delete(schema.chatRoom)
       .where(eq(schema.chatRoom.id, roomId));
+  }
+
+  async getPresence(
+    roomId: string,
+  ): Promise<{ onlineUsers: Array<{ userId: string; userName: string }> }> {
+    const userIds = await this.presenceService.getOnlineUsers(roomId);
+
+    if (userIds.length === 0) {
+      return { onlineUsers: [] };
+    }
+
+    const users = await this.drizzle.db
+      .select({
+        id: schema.user.id,
+        name: schema.user.name,
+      })
+      .from(schema.user)
+      .where(inArray(schema.user.id, userIds));
+
+    return {
+      onlineUsers: users.map((u) => ({ userId: u.id, userName: u.name })),
+    };
+  }
+
+  async getTyping(
+    roomId: string,
+  ): Promise<{ typingUsers: Array<{ userId: string; userName: string }> }> {
+    const userIds = await this.typingService.getTypingUsers(roomId);
+
+    if (userIds.length === 0) {
+      return { typingUsers: [] };
+    }
+
+    const users = await this.drizzle.db
+      .select({
+        id: schema.user.id,
+        name: schema.user.name,
+      })
+      .from(schema.user)
+      .where(inArray(schema.user.id, userIds));
+
+    return {
+      typingUsers: users.map((u) => ({ userId: u.id, userName: u.name })),
+    };
   }
 }

@@ -67,6 +67,24 @@ export const successDto = z.object({
   success: z.boolean(),
 });
 
+export const presenceDto = z.object({
+  onlineUsers: z.array(
+    z.object({
+      userId: z.string(),
+      userName: z.string(),
+    }),
+  ),
+});
+
+export const typingDto = z.object({
+  typingUsers: z.array(
+    z.object({
+      userId: z.string(),
+      userName: z.string(),
+    }),
+  ),
+});
+
 export const createRoomSchema = z.object({
   name: z.string().min(1).max(100),
 });

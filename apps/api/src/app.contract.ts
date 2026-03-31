@@ -1,5 +1,5 @@
 import { chatContract } from "./app/chat/chat.contract.js";
-import * as chatEvents from "./app/chat/chat-events.js";
+import * as chatEvents from "./app/chat/chat-events.contract.js";
 
 export const router = {
   chat: chatContract,

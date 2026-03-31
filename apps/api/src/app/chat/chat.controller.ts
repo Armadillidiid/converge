@@ -75,15 +75,20 @@ export class ChatController {
     });
   }
 
-  @Post("rooms/:id/messages")
+  @Get("rooms/:id/presence")
   @UseGuards(ChatMembershipGuard)
-  @UsePipes(new ZodValidationPipe(chatSchemas.createMessageSchema))
-  async createMessage(
-    @Session() session: UserSession,
+  async getPresence(
     @Param("id") roomId: string,
-    @Body() body: z.infer<typeof chatSchemas.createMessageSchema>,
-  ): Promise<z.infer<typeof dto.messageDto>> {
-    return this.chatService.createMessage(session.user.id, roomId, body);
+  ): Promise<z.infer<typeof dto.presenceDto>> {
+    return this.chatService.getPresence(roomId);
+  }
+
+  @Get("rooms/:id/typing")
+  @UseGuards(ChatMembershipGuard)
+  async getTyping(
+    @Param("id") roomId: string,
+  ): Promise<z.infer<typeof dto.typingDto>> {
+    return this.chatService.getTyping(roomId);
   }
 
   @Post("rooms/:id/invite")

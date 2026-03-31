@@ -16,6 +16,7 @@ import { ChatTypingService } from "./chat-typing.service.js";
 import { SocketIOAuthService } from "#src/modules/better-auth/guards/socket-io-auth.service.js";
 import { SocketIOAuthGuard } from "#src/modules/better-auth/guards/socket-io-auth.guard.js";
 import {
+  CHAT_EVENTS,
   wsJoinRoomInputSchema,
   wsLeaveRoomInputSchema,
   wsSendMessageInputSchema,
@@ -24,7 +25,7 @@ import {
   type WsLeaveRoomInput,
   type WsSendMessageInput,
   type WsTypingInput,
-} from "./chat-events.js";
+} from "./chat-events.contract.js";
 
 interface AuthenticatedSocket extends Socket {
   data: {
@@ -93,7 +94,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage("join_room")
+  @SubscribeMessage(CHAT_EVENTS.JOIN_ROOM)
   async handleJoinRoom(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
@@ -118,7 +119,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await client.join(`room:${roomId}`);
     await this.presenceService.joinRoom(roomId, userId);
 
-    this.server.to(`room:${roomId}`).emit("user:presence", {
+    this.server.to(`room:${roomId}`).emit(CHAT_EVENTS.USER_PRESENCE, {
       userId,
       userName: client.data.userName,
       roomId,
@@ -126,7 +127,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  @SubscribeMessage("leave_room")
+  @SubscribeMessage(CHAT_EVENTS.LEAVE_ROOM)
   async handleLeaveRoom(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
@@ -143,14 +144,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await client.leave(`room:${roomId}`);
     await this.presenceService.leaveRoom(roomId, userId);
 
-    this.server.to(`room:${roomId}`).emit("user:presence", {
+    this.server.to(`room:${roomId}`).emit(CHAT_EVENTS.USER_PRESENCE, {
       userId,
       roomId,
       status: "offline",
     });
   }
 
-  @SubscribeMessage("send_message")
+  @SubscribeMessage(CHAT_EVENTS.SEND_MESSAGE)
   async handleSendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
@@ -164,15 +165,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { roomId, content } = parsed.data as WsSendMessageInput;
     const userId = client.data.userId;
 
-    client.to(`room:${roomId}`).emit("message:new", {
+    const message = await this.chatService.createMessage(userId, roomId, {
+      content: content.trim(),
+    });
+
+    client.to(`room:${roomId}`).emit(CHAT_EVENTS.MESSAGE_NEW, {
+      id: message.id,
       roomId,
       senderId: userId,
       senderName: client.data.userName,
-      content: content.trim(),
+      content: message.content,
+      createdAt: message.createdAt,
     });
   }
 
-  @SubscribeMessage("typing_start")
+  @SubscribeMessage(CHAT_EVENTS.TYPING_START)
   async handleTypingStart(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
@@ -188,7 +195,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     await this.typingService.setTyping(roomId, userId);
 
-    client.to(`room:${roomId}`).emit("user:typing", {
+    client.to(`room:${roomId}`).emit(CHAT_EVENTS.USER_TYPING, {
       userId,
       userName: client.data.userName,
       roomId,
@@ -196,7 +203,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  @SubscribeMessage("typing_stop")
+  @SubscribeMessage(CHAT_EVENTS.TYPING_STOP)
   async handleTypingStop(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
@@ -212,7 +219,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     await this.typingService.clearTyping(roomId, userId);
 
-    client.to(`room:${roomId}`).emit("user:typing", {
+    client.to(`room:${roomId}`).emit(CHAT_EVENTS.USER_TYPING, {
       userId,
       roomId,
       isTyping: false,

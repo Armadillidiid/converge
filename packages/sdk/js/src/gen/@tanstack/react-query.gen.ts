@@ -13,8 +13,6 @@ import { ApiClient, type Options } from "../sdk.gen";
 import type {
   ChatAcceptInvitationData,
   ChatAcceptInvitationResponse,
-  ChatCreateMessageData,
-  ChatCreateMessageResponse,
   ChatCreateRoomData,
   ChatCreateRoomResponse,
   ChatDeclineInvitationData,
@@ -27,10 +25,14 @@ import type {
   ChatGetMembersResponse,
   ChatGetMessagesData,
   ChatGetMessagesResponse,
+  ChatGetPresenceData,
+  ChatGetPresenceResponse,
   ChatGetRoomData,
   ChatGetRoomResponse,
   ChatGetRoomsData,
   ChatGetRoomsResponse,
+  ChatGetTypingData,
+  ChatGetTypingResponse,
   ChatInviteMemberData,
   ChatInviteMemberResponse,
   ChatLeaveRoomData,
@@ -316,32 +318,56 @@ export const chatGetMessagesInfiniteOptions = (
     },
   );
 
+export const chatGetPresenceQueryKey = (
+  options: Options<ChatGetPresenceData>,
+) => createQueryKey("chatGetPresence", options);
+
 /**
- * Send a message
+ * Get online users in a room
  */
-export const chatCreateMessageMutation = (
-  options?: Partial<Options<ChatCreateMessageData>>,
-): UseMutationOptions<
-  ChatCreateMessageResponse,
-  DefaultError,
-  Options<ChatCreateMessageData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    ChatCreateMessageResponse,
+export const chatGetPresenceOptions = (options: Options<ChatGetPresenceData>) =>
+  queryOptions<
+    ChatGetPresenceResponse,
     DefaultError,
-    Options<ChatCreateMessageData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await ApiClient.__registry.get().chat.createMessage({
+    ChatGetPresenceResponse,
+    ReturnType<typeof chatGetPresenceQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await ApiClient.__registry.get().chat.getPresence({
         ...options,
-        ...fnOptions,
+        ...queryKey[0],
+        signal,
         throwOnError: true,
       });
       return data;
     },
-  };
-  return mutationOptions;
-};
+    queryKey: chatGetPresenceQueryKey(options),
+  });
+
+export const chatGetTypingQueryKey = (options: Options<ChatGetTypingData>) =>
+  createQueryKey("chatGetTyping", options);
+
+/**
+ * Get currently typing users in a room
+ */
+export const chatGetTypingOptions = (options: Options<ChatGetTypingData>) =>
+  queryOptions<
+    ChatGetTypingResponse,
+    DefaultError,
+    ChatGetTypingResponse,
+    ReturnType<typeof chatGetTypingQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await ApiClient.__registry.get().chat.getTyping({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: chatGetTypingQueryKey(options),
+  });
 
 /**
  * Invite user to room (owner only)

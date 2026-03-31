@@ -48,14 +48,23 @@ export const chatContract = {
     .input(dto.getMessagesSchema.extend(dto.pathIdParam.shape))
     .output(dto.paginatedMessagesDto),
 
-  createMessage: oc
+  getPresence: oc
     .route({
-      method: "POST",
-      path: "/chat/rooms/{id}/messages",
-      description: "Send a message",
+      method: "GET",
+      path: "/chat/rooms/{id}/presence",
+      description: "Get online users in a room",
     })
-    .input(dto.createMessageSchema.extend(dto.pathIdParam.shape))
-    .output(dto.messageDto),
+    .input(dto.pathIdParam)
+    .output(dto.presenceDto),
+
+  getTyping: oc
+    .route({
+      method: "GET",
+      path: "/chat/rooms/{id}/typing",
+      description: "Get currently typing users in a room",
+    })
+    .input(dto.pathIdParam)
+    .output(dto.typingDto),
 
   inviteMember: oc
     .route({

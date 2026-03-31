@@ -9,9 +9,21 @@ export const zClientToServerEventName = z.enum([
   "typing_start",
   "typing_stop",
   "heartbeat",
+  "message:new",
+  "user:typing",
+  "user:presence",
+  "member:joined",
+  "member:left",
+  "room:deleted",
 ]);
 
 export const zServerToClientEventName = z.enum([
+  "join_room",
+  "leave_room",
+  "send_message",
+  "typing_start",
+  "typing_stop",
+  "heartbeat",
   "message:new",
   "user:typing",
   "user:presence",
@@ -21,20 +33,20 @@ export const zServerToClientEventName = z.enum([
 ]);
 
 export const zWsJoinRoomInput = z.object({
-  roomId: z.uuid(),
+  roomId: z.string(),
 });
 
 export const zWsLeaveRoomInput = z.object({
-  roomId: z.uuid(),
+  roomId: z.string(),
 });
 
 export const zWsSendMessageInput = z.object({
-  roomId: z.uuid(),
+  roomId: z.string(),
   content: z.string().min(1).max(5000),
 });
 
 export const zWsTypingInput = z.object({
-  roomId: z.uuid(),
+  roomId: z.string(),
 });
 
 export const zWsMessageNewOutput = z.object({
@@ -205,10 +217,8 @@ export const zChatGetMessagesResponse = z.object({
   nextCursor: z.string().optional(),
 });
 
-export const zChatCreateMessageData = z.object({
-  body: z.object({
-    content: z.string().min(1).max(5000),
-  }),
+export const zChatGetPresenceData = z.object({
+  body: z.never().optional(),
   path: z.object({
     id: z.string(),
   }),
@@ -218,12 +228,33 @@ export const zChatCreateMessageData = z.object({
 /**
  * OK
  */
-export const zChatCreateMessageResponse = z.object({
-  id: z.string(),
-  roomId: z.string(),
-  senderId: z.string(),
-  content: z.string(),
-  createdAt: z.unknown().optional(),
+export const zChatGetPresenceResponse = z.object({
+  onlineUsers: z.array(
+    z.object({
+      userId: z.string(),
+      userName: z.string(),
+    }),
+  ),
+});
+
+export const zChatGetTypingData = z.object({
+  body: z.never().optional(),
+  path: z.object({
+    id: z.string(),
+  }),
+  query: z.never().optional(),
+});
+
+/**
+ * OK
+ */
+export const zChatGetTypingResponse = z.object({
+  typingUsers: z.array(
+    z.object({
+      userId: z.string(),
+      userName: z.string(),
+    }),
+  ),
 });
 
 export const zChatInviteMemberData = z.object({

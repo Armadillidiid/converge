@@ -1,38 +1,39 @@
 import { z } from "zod";
 
-export const clientToServerEventNameEnum = z.enum([
-  "join_room",
-  "leave_room",
-  "send_message",
-  "typing_start",
-  "typing_stop",
-  "heartbeat",
-]);
+export const CHAT_EVENTS = {
+  JOIN_ROOM: "join_room",
+  LEAVE_ROOM: "leave_room",
+  SEND_MESSAGE: "send_message",
+  TYPING_START: "typing_start",
+  TYPING_STOP: "typing_stop",
+  HEARTBEAT: "heartbeat",
+  MESSAGE_NEW: "message:new",
+  USER_TYPING: "user:typing",
+  USER_PRESENCE: "user:presence",
+  MEMBER_JOINED: "member:joined",
+  MEMBER_LEFT: "member:left",
+  ROOM_DELETED: "room:deleted",
+} as const;
 
-export const serverToClientEventNameEnum = z.enum([
-  "message:new",
-  "user:typing",
-  "user:presence",
-  "member:joined",
-  "member:left",
-  "room:deleted",
-]);
+export const clientToServerEventNameEnum = z.enum(CHAT_EVENTS);
+
+export const serverToClientEventNameEnum = z.enum(CHAT_EVENTS);
 
 export const wsJoinRoomInputSchema = z.object({
-  roomId: z.string().uuid(),
+  roomId: z.string(),
 });
 
 export const wsLeaveRoomInputSchema = z.object({
-  roomId: z.string().uuid(),
+  roomId: z.string(),
 });
 
 export const wsSendMessageInputSchema = z.object({
-  roomId: z.string().uuid(),
+  roomId: z.string(),
   content: z.string().min(1).max(5000),
 });
 
 export const wsTypingInputSchema = z.object({
-  roomId: z.string().uuid(),
+  roomId: z.string(),
 });
 
 export const wsMessageNewOutputSchema = z.object({

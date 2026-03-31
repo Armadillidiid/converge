@@ -2,6 +2,11 @@
   "name": "@repo/ai",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./keys": "./keys.ts"
+  },
   "scripts": {
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
@@ -11,11 +16,12 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.77",
+    "@ai-sdk/openai": "^3.0.49",
+    "@ai-sdk/openai-compatible": "^2.0.37",
     "@t3-oss/env-nextjs": "catalog:",
-    "ai": "^5.0.107",
+    "ai": "^6.0.141",
     "react": "catalog:",
-    "streamdown": "^1.6.10",
+    "streamdown": "^2.5.0",
     "tailwind-merge": "catalog:",
     "zod": "catalog:"
   },

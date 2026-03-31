@@ -1,15 +1,11 @@
-import { createOpenAI } from "@ai-sdk/openai";
-import type { EmbeddingModel, LanguageModel } from "ai";
-import { keys } from "../keys";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { keys } from "../keys.js";
 
-const openai = createOpenAI({
-  apiKey: keys().OPENAI_API_KEY,
-});
+const apiKey = keys().OPENAI_API_KEY;
+const baseURL = keys().OPENAI_BASE_URL;
 
-export const models: {
-  readonly chat: LanguageModel;
-  readonly embeddings: EmbeddingModel<string>;
-} = {
-  chat: openai("gpt-4o-mini"),
-  embeddings: openai.textEmbeddingModel("text-embedding-3-small"),
+const provider = createOpenAICompatible({ name: "github", apiKey, baseURL });
+
+export const models = {
+  chat: provider,
 };

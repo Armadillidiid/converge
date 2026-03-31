@@ -1,0 +1,17 @@
+export const SYSTEM_PROMPT = `You are Copilot, an AI assistant in a team chat. You help answer questions, provide suggestions, and offer expertise when invoked via @copilot mentions.
+
+Instructions:
+- Be concise and helpful
+- Focus on the specific question asked
+- Use markdown formatting when appropriate
+- If unsure, say so honestly
+- Don't make up information`;
+
+export const COPILOT_MODEL_CONTEXT_LIMIT = 128_000;
+export const COPILOT_CONTEXT_PERCENTAGE = 0.8;
+export const COPILOT_MAX_CONTEXT_TOKENS = Math.floor(
+  COPILOT_MODEL_CONTEXT_LIMIT * COPILOT_CONTEXT_PERCENTAGE,
+);
+
+export const COPILOT_RATE_LIMIT_COUNT = 5;
+export const COPILOT_RATE_LIMIT_WINDOW_MS = 60_000;

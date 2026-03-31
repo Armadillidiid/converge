@@ -4,62 +4,110 @@ import * as dto from "./chat.dto.js";
 
 export const chatContract = {
   createRoom: oc
-    .route({ method: "POST", path: "/chat/rooms" })
+    .route({
+      method: "POST",
+      path: "/chat/rooms",
+      description: "Create a new chat room",
+    })
     .input(dto.createRoomSchema)
     .output(dto.roomDto),
 
   getRooms: oc
-    .route({ method: "GET", path: "/chat/rooms" })
+    .route({
+      method: "GET",
+      path: "/chat/rooms",
+      description: "List user's chat rooms (paginated)",
+    })
     .input(z.object({}).optional())
     .output(dto.roomListDto),
 
   getRoom: oc
-    .route({ method: "GET", path: "/chat/rooms/{id}" })
+    .route({
+      method: "GET",
+      path: "/chat/rooms/{id}",
+      description: "Get room details with members",
+    })
     .input(dto.pathIdParam)
     .output(dto.roomWithMembersDto),
 
   getMembers: oc
-    .route({ method: "GET", path: "/chat/rooms/{id}/members" })
+    .route({
+      method: "GET",
+      path: "/chat/rooms/{id}/members",
+      description: "List room members",
+    })
     .input(dto.pathIdParam)
     .output(dto.memberListDto),
 
   getMessages: oc
-    .route({ method: "GET", path: "/chat/rooms/{id}/messages" })
+    .route({
+      method: "GET",
+      path: "/chat/rooms/{id}/messages",
+      description: "Get room messages (paginated)",
+    })
     .input(dto.getMessagesSchema.extend(dto.pathIdParam.shape))
     .output(dto.paginatedMessagesDto),
 
   createMessage: oc
-    .route({ method: "POST", path: "/chat/rooms/{id}/messages" })
+    .route({
+      method: "POST",
+      path: "/chat/rooms/{id}/messages",
+      description: "Send a message",
+    })
     .input(dto.createMessageSchema.extend(dto.pathIdParam.shape))
     .output(dto.messageDto),
 
   inviteMember: oc
-    .route({ method: "POST", path: "/chat/rooms/{id}/invite" })
+    .route({
+      method: "POST",
+      path: "/chat/rooms/{id}/invite",
+      description: "Invite user to room (owner only)",
+    })
     .input(dto.inviteMemberSchema.extend(dto.pathIdParam.shape))
     .output(dto.invitationDto),
 
   getInvitations: oc
-    .route({ method: "GET", path: "/chat/invitations" })
+    .route({
+      method: "GET",
+      path: "/chat/invitations",
+      description: "List user's pending invitations",
+    })
     .input(z.object({}).optional())
     .output(dto.invitationListDto),
 
   acceptInvitation: oc
-    .route({ method: "POST", path: "/chat/invitations/{id}/accept" })
+    .route({
+      method: "POST",
+      path: "/chat/invitations/{id}/accept",
+      description: "Accept an invitation",
+    })
     .input(dto.pathIdParam)
     .output(dto.invitationDto),
 
   declineInvitation: oc
-    .route({ method: "POST", path: "/chat/invitations/{id}/decline" })
+    .route({
+      method: "POST",
+      path: "/chat/invitations/{id}/decline",
+      description: "Decline an invitation",
+    })
     .input(dto.pathIdParam)
     .output(dto.invitationDto),
 
   leaveRoom: oc
-    .route({ method: "POST", path: "/chat/rooms/{id}/leave" })
+    .route({
+      method: "POST",
+      path: "/chat/rooms/{id}/leave",
+      description: "Leave a room",
+    })
     .input(dto.pathIdParam)
     .output(dto.successDto),
 
   deleteRoom: oc
-    .route({ method: "DELETE", path: "/chat/rooms/{id}" })
+    .route({
+      method: "DELETE",
+      path: "/chat/rooms/{id}",
+      description: "Delete room (owner only)",
+    })
     .input(dto.pathIdParam)
     .output(dto.successDto),
 };

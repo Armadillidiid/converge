@@ -101,6 +101,9 @@ class HeyApiRegistry<T> {
 }
 
 export class Chat extends HeyApiClient {
+  /**
+   * List user's chat rooms (paginated)
+   */
   public getRooms<ThrowOnError extends boolean = false>(
     options?: Options<ChatGetRoomsData, ThrowOnError>,
   ) {
@@ -118,6 +121,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * Create a new chat room
+   */
   public createRoom<ThrowOnError extends boolean = false>(
     options: Options<ChatCreateRoomData, ThrowOnError>,
   ) {
@@ -139,6 +145,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * Delete room (owner only)
+   */
   public deleteRoom<ThrowOnError extends boolean = false>(
     options: Options<ChatDeleteRoomData, ThrowOnError>,
   ) {
@@ -160,6 +169,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * Get room details with members
+   */
   public getRoom<ThrowOnError extends boolean = false>(
     options: Options<ChatGetRoomData, ThrowOnError>,
   ) {
@@ -176,6 +188,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * List room members
+   */
   public getMembers<ThrowOnError extends boolean = false>(
     options: Options<ChatGetMembersData, ThrowOnError>,
   ) {
@@ -193,6 +208,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * Get room messages (paginated)
+   */
   public getMessages<ThrowOnError extends boolean = false>(
     options: Options<ChatGetMessagesData, ThrowOnError>,
   ) {
@@ -210,6 +228,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * Send a message
+   */
   public createMessage<ThrowOnError extends boolean = false>(
     options: Options<ChatCreateMessageData, ThrowOnError>,
   ) {
@@ -231,6 +252,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * Invite user to room (owner only)
+   */
   public inviteMember<ThrowOnError extends boolean = false>(
     options: Options<ChatInviteMemberData, ThrowOnError>,
   ) {
@@ -252,6 +276,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * List user's pending invitations
+   */
   public getInvitations<ThrowOnError extends boolean = false>(
     options?: Options<ChatGetInvitationsData, ThrowOnError>,
   ) {
@@ -269,6 +296,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * Accept an invitation
+   */
   public acceptInvitation<ThrowOnError extends boolean = false>(
     options: Options<ChatAcceptInvitationData, ThrowOnError>,
   ) {
@@ -290,6 +320,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * Decline an invitation
+   */
   public declineInvitation<ThrowOnError extends boolean = false>(
     options: Options<ChatDeclineInvitationData, ThrowOnError>,
   ) {
@@ -311,6 +344,9 @@ export class Chat extends HeyApiClient {
     });
   }
 
+  /**
+   * Leave a room
+   */
   public leaveRoom<ThrowOnError extends boolean = false>(
     options: Options<ChatLeaveRoomData, ThrowOnError>,
   ) {

@@ -16,15 +16,15 @@ import { ChatTypingService } from "./chat-typing.service.js";
 import { SocketIOAuthService } from "#src/modules/better-auth/guards/socket-io-auth.service.js";
 import { SocketIOAuthGuard } from "#src/modules/better-auth/guards/socket-io-auth.guard.js";
 import {
-  wsJoinRoomSchema,
-  wsLeaveRoomSchema,
-  wsSendMessageSchema,
-  wsTypingSchema,
+  wsJoinRoomInputSchema,
+  wsLeaveRoomInputSchema,
+  wsSendMessageInputSchema,
+  wsTypingInputSchema,
   type WsJoinRoomInput,
   type WsLeaveRoomInput,
   type WsSendMessageInput,
   type WsTypingInput,
-} from "./chat.dto.js";
+} from "./chat-events.js";
 
 interface AuthenticatedSocket extends Socket {
   data: {
@@ -98,7 +98,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
   ) {
-    const parsed = wsJoinRoomSchema.safeParse(payload);
+    const parsed = wsJoinRoomInputSchema.safeParse(payload);
     if (!parsed.success) {
       client.emit("error", { message: "Invalid payload" });
       return;
@@ -131,7 +131,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
   ) {
-    const parsed = wsLeaveRoomSchema.safeParse(payload);
+    const parsed = wsLeaveRoomInputSchema.safeParse(payload);
     if (!parsed.success) {
       client.emit("error", { message: "Invalid payload" });
       return;
@@ -155,7 +155,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
   ) {
-    const parsed = wsSendMessageSchema.safeParse(payload);
+    const parsed = wsSendMessageInputSchema.safeParse(payload);
     if (!parsed.success) {
       client.emit("error", { message: "Invalid payload" });
       return;
@@ -177,7 +177,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
   ) {
-    const parsed = wsTypingSchema.safeParse(payload);
+    const parsed = wsTypingInputSchema.safeParse(payload);
     if (!parsed.success) {
       client.emit("error", { message: "Invalid payload" });
       return;
@@ -201,7 +201,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: unknown,
   ) {
-    const parsed = wsTypingSchema.safeParse(payload);
+    const parsed = wsTypingInputSchema.safeParse(payload);
     if (!parsed.success) {
       client.emit("error", { message: "Invalid payload" });
       return;

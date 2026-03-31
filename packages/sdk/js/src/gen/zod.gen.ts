@@ -2,6 +2,66 @@
 
 import * as z from "zod";
 
+export const zClientToServerEventName = z.enum([
+  "join_room",
+  "leave_room",
+  "send_message",
+  "typing_start",
+  "typing_stop",
+  "heartbeat",
+]);
+
+export const zServerToClientEventName = z.enum([
+  "message:new",
+  "user:typing",
+  "user:presence",
+  "member:joined",
+  "member:left",
+  "room:deleted",
+]);
+
+export const zWsJoinRoomInput = z.object({
+  roomId: z.uuid(),
+});
+
+export const zWsLeaveRoomInput = z.object({
+  roomId: z.uuid(),
+});
+
+export const zWsSendMessageInput = z.object({
+  roomId: z.uuid(),
+  content: z.string().min(1).max(5000),
+});
+
+export const zWsTypingInput = z.object({
+  roomId: z.uuid(),
+});
+
+export const zWsMessageNewOutput = z.object({
+  roomId: z.string(),
+  senderId: z.string(),
+  senderName: z.string(),
+  content: z.string(),
+});
+
+export const zWsUserPresenceOutput = z.object({
+  userId: z.string(),
+  userName: z.string().optional(),
+  roomId: z.string(),
+  status: z.enum(["online", "offline"]),
+});
+
+export const zWsUserTypingOutput = z.object({
+  userId: z.string(),
+  userName: z.string().optional(),
+  roomId: z.string(),
+  isTyping: z.boolean(),
+});
+
+export const zWsErrorOutput = z.object({
+  message: z.string(),
+});
+
 export const zChatGetRoomsData = z.object({
   body: z.never().optional(),
   path: z.never().optional(),

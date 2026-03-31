@@ -80,6 +80,9 @@ const createQueryKey = <TOptions extends Options>(
 export const chatGetRoomsQueryKey = (options?: Options<ChatGetRoomsData>) =>
   createQueryKey("chatGetRooms", options);
 
+/**
+ * List user's chat rooms (paginated)
+ */
 export const chatGetRoomsOptions = (options?: Options<ChatGetRoomsData>) =>
   queryOptions<
     ChatGetRoomsResponse,
@@ -99,6 +102,9 @@ export const chatGetRoomsOptions = (options?: Options<ChatGetRoomsData>) =>
     queryKey: chatGetRoomsQueryKey(options),
   });
 
+/**
+ * Create a new chat room
+ */
 export const chatCreateRoomMutation = (
   options?: Partial<Options<ChatCreateRoomData>>,
 ): UseMutationOptions<
@@ -123,6 +129,9 @@ export const chatCreateRoomMutation = (
   return mutationOptions;
 };
 
+/**
+ * Delete room (owner only)
+ */
 export const chatDeleteRoomMutation = (
   options?: Partial<Options<ChatDeleteRoomData>>,
 ): UseMutationOptions<
@@ -150,6 +159,9 @@ export const chatDeleteRoomMutation = (
 export const chatGetRoomQueryKey = (options: Options<ChatGetRoomData>) =>
   createQueryKey("chatGetRoom", options);
 
+/**
+ * Get room details with members
+ */
 export const chatGetRoomOptions = (options: Options<ChatGetRoomData>) =>
   queryOptions<
     ChatGetRoomResponse,
@@ -172,6 +184,9 @@ export const chatGetRoomOptions = (options: Options<ChatGetRoomData>) =>
 export const chatGetMembersQueryKey = (options: Options<ChatGetMembersData>) =>
   createQueryKey("chatGetMembers", options);
 
+/**
+ * List room members
+ */
 export const chatGetMembersOptions = (options: Options<ChatGetMembersData>) =>
   queryOptions<
     ChatGetMembersResponse,
@@ -195,6 +210,9 @@ export const chatGetMessagesQueryKey = (
   options: Options<ChatGetMessagesData>,
 ) => createQueryKey("chatGetMessages", options);
 
+/**
+ * Get room messages (paginated)
+ */
 export const chatGetMessagesOptions = (options: Options<ChatGetMessagesData>) =>
   queryOptions<
     ChatGetMessagesResponse,
@@ -253,6 +271,9 @@ export const chatGetMessagesInfiniteQueryKey = (
 ): QueryKey<Options<ChatGetMessagesData>> =>
   createQueryKey("chatGetMessages", options, true);
 
+/**
+ * Get room messages (paginated)
+ */
 export const chatGetMessagesInfiniteOptions = (
   options: Options<ChatGetMessagesData>,
 ) =>
@@ -295,6 +316,9 @@ export const chatGetMessagesInfiniteOptions = (
     },
   );
 
+/**
+ * Send a message
+ */
 export const chatCreateMessageMutation = (
   options?: Partial<Options<ChatCreateMessageData>>,
 ): UseMutationOptions<
@@ -319,6 +343,9 @@ export const chatCreateMessageMutation = (
   return mutationOptions;
 };
 
+/**
+ * Invite user to room (owner only)
+ */
 export const chatInviteMemberMutation = (
   options?: Partial<Options<ChatInviteMemberData>>,
 ): UseMutationOptions<
@@ -347,6 +374,9 @@ export const chatGetInvitationsQueryKey = (
   options?: Options<ChatGetInvitationsData>,
 ) => createQueryKey("chatGetInvitations", options);
 
+/**
+ * List user's pending invitations
+ */
 export const chatGetInvitationsOptions = (
   options?: Options<ChatGetInvitationsData>,
 ) =>
@@ -368,6 +398,9 @@ export const chatGetInvitationsOptions = (
     queryKey: chatGetInvitationsQueryKey(options),
   });
 
+/**
+ * Accept an invitation
+ */
 export const chatAcceptInvitationMutation = (
   options?: Partial<Options<ChatAcceptInvitationData>>,
 ): UseMutationOptions<
@@ -392,6 +425,9 @@ export const chatAcceptInvitationMutation = (
   return mutationOptions;
 };
 
+/**
+ * Decline an invitation
+ */
 export const chatDeclineInvitationMutation = (
   options?: Partial<Options<ChatDeclineInvitationData>>,
 ): UseMutationOptions<
@@ -416,6 +452,9 @@ export const chatDeclineInvitationMutation = (
   return mutationOptions;
 };
 
+/**
+ * Leave a room
+ */
 export const chatLeaveRoomMutation = (
   options?: Partial<Options<ChatLeaveRoomData>>,
 ): UseMutationOptions<

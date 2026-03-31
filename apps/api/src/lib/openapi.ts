@@ -1,6 +1,6 @@
 import { OpenAPIGenerator } from "@orpc/openapi";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
-import { router } from "#src/app.contract.js";
+import { router, commonSchemas } from "#src/app.contract.js";
 import { _API_PREFIX } from "#src/env.js";
 
 export const genOpenapiDocs = async () => {
@@ -16,7 +16,7 @@ export const genOpenapiDocs = async () => {
       title: "Converge API",
       version: "1.0.0",
     },
-    commonSchemas: {},
+    commonSchemas,
     ...(servers ? { servers } : {}),
   });
 

@@ -4,6 +4,64 @@ export type ClientOptions = {
   baseUrl: `${string}://${string}/api` | (string & {});
 };
 
+export type ClientToServerEventName =
+  | "join_room"
+  | "leave_room"
+  | "send_message"
+  | "typing_start"
+  | "typing_stop"
+  | "heartbeat";
+
+export type ServerToClientEventName =
+  | "message:new"
+  | "user:typing"
+  | "user:presence"
+  | "member:joined"
+  | "member:left"
+  | "room:deleted";
+
+export type WsJoinRoomInput = {
+  roomId: string;
+};
+
+export type WsLeaveRoomInput = {
+  roomId: string;
+};
+
+export type WsSendMessageInput = {
+  roomId: string;
+  content: string;
+};
+
+export type WsTypingInput = {
+  roomId: string;
+};
+
+export type WsMessageNewOutput = {
+  roomId: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+};
+
+export type WsUserPresenceOutput = {
+  userId: string;
+  userName?: string;
+  roomId: string;
+  status: "online" | "offline";
+};
+
+export type WsUserTypingOutput = {
+  userId: string;
+  userName?: string;
+  roomId: string;
+  isTyping: boolean;
+};
+
+export type WsErrorOutput = {
+  message: string;
+};
+
 export type ChatGetRoomsData = {
   body?: never;
   path?: never;

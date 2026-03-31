@@ -1,8 +1,5 @@
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import {
-  chatGetMessagesOptions,
-  chatCreateMessageMutation,
-} from "@repo/sdk/tanstack";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { chatGetMessagesOptions } from "@repo/sdk/tanstack";
 
 export function useChatMessages(roomId: string) {
   const messagesQuery = useSuspenseQuery(
@@ -12,10 +9,7 @@ export function useChatMessages(roomId: string) {
     }),
   );
 
-  const sendMessageMutation = useMutation(chatCreateMessageMutation());
-
   return {
     messagesQuery,
-    sendMessageMutation,
   };
 }

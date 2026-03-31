@@ -21,7 +21,7 @@ export function ChatView({ roomId }: ChatViewProperties) {
   const { data: session } = auth.useSession();
   const currentUserId = session?.user?.id;
 
-  const { messagesQuery, sendMessageMutation } = useChatMessages(roomId);
+  const { messagesQuery } = useChatMessages(roomId);
   const { membersQuery } = useRoomMembers(roomId);
   const {
     isConnected,
@@ -54,10 +54,6 @@ export function ChatView({ roomId }: ChatViewProperties) {
 
   const handleSend = (content: string) => {
     sendSocketMessage(content);
-    sendMessageMutation.mutateAsync({
-      path: { id: roomId },
-      body: { content },
-    });
   };
 
   const getSenderInfo = (senderId: string) => {

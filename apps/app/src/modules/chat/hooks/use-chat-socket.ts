@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type {
   NewMessageEvent,
   PresenceEvent,
   TypingEvent,
 } from "../types/chat.types";
 import { useChatContext } from "@/shared/lib/chat-provider";
+import {
+  chatGetPresenceOptions,
+  chatGetTypingOptions,
+} from "@repo/sdk/tanstack";
 
 export function useChatSocket(roomId: string) {
   const { socket, isConnected } = useChatContext();
@@ -15,6 +20,29 @@ export function useChatSocket(roomId: string) {
     new Map(),
   );
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+
+  const { data: presenceData } = useSuspenseQuery(
+    chatGetPresenceOptions({ path: { id: roomId } }),
+  );
+  const { data: typingData } = useSuspenseQuery(
+    chatGetTypingOptions({ path: { id: roomId } }),
+  );
+
+  useEffect(() => {
+    if (presenceData?.onlineUsers) {
+      setOnlineUsers(new Set(presenceData.onlineUsers.map((u) => u.userId)));
+    }
+  }, [presenceData]);
+
+  useEffect(() => {
+    if (typingData?.typingUsers) {
+      const map = new Map<string, string>();
+      for (const u of typingData.typingUsers) {
+        map.set(u.userId, u.userName);
+      }
+      setTypingUsers(map);
+    }
+  }, [typingData]);
 
   useEffect(() => {
     if (!socket || !isConnected || !roomId) return;
@@ -27,8 +55,6 @@ export function useChatSocket(roomId: string) {
       }
     };
 
-    // TODO: Currently, there's no way to get the initial presence state of users in the room.
-    // We need to add an API endpoint to fetch the current presence status of users in the room when joining.
     const handlePresence = (data: PresenceEvent) => {
       if (data.roomId === roomId) {
         setOnlineUsers((prev) => {
@@ -48,7 +74,7 @@ export function useChatSocket(roomId: string) {
         setTypingUsers((prev) => {
           const next = new Map(prev);
           if (data.isTyping) {
-            next.set(data.userId, data.userName);
+            next.set(data.userId, data.userName ?? "");
           } else {
             next.delete(data.userId);
           }

@@ -2,6 +2,11 @@ import "dotenv/config";
 import { keys } from "./keys";
 import { account, session, user, verification } from "./schemas/better-auth";
 import { createDrizzle } from "./index";
+import {
+  COPILOT_USER_ID,
+  COPILOT_USER_EMAIL,
+  COPILOT_USER_NAME,
+} from "./constants";
 
 async function main() {
   const config = keys();
@@ -23,11 +28,28 @@ async function main() {
       createdAt: new Date(),
       updatedAt: new Date(),
       isAnonymous: false,
+      isBot: false,
     };
   });
 
   console.log("Seeding users...");
   await db.insert(user).values(users);
+
+  console.log("Seeding copilot user...");
+  await db
+    .insert(user)
+    .values({
+      id: COPILOT_USER_ID,
+      name: COPILOT_USER_NAME,
+      email: COPILOT_USER_EMAIL,
+      emailVerified: true,
+      image: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isAnonymous: false,
+      isBot: true,
+    })
+    .onConflictDoNothing();
 
   console.log("Seeding sessions...");
   await db.insert(session).values(

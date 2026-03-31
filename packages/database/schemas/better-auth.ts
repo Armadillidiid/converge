@@ -13,6 +13,7 @@ export const user = pgTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   isAnonymous: boolean("is_anonymous").default(false),
+  isBot: boolean("is_bot").default(false).notNull(),
 });
 
 export const session = pgTable(

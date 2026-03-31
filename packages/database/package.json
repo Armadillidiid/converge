@@ -5,6 +5,7 @@
   "files": [
     "index.ts",
     "keys.ts",
+    "constants.ts",
     "drizzle.config.ts",
     "schemas"
   ],
@@ -12,6 +13,7 @@
   "exports": {
     ".": "./index.ts",
     "./keys": "./keys.ts",
+    "./constants": "./constants.ts",
     "./schemas/schema": "./schemas/schema.ts",
     "./package.json": "./package.json"
   },

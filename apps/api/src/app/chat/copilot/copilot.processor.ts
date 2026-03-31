@@ -1,8 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import type { Job } from "bullmq";
-import { ChatGateway } from "../chat.gateway.js";
-import { ChatService } from "../chat.service.js";
 import { CopilotAiService } from "./copilot-ai.service.js";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
 import { schema } from "@repo/database";
@@ -16,20 +14,17 @@ export class CopilotProcessor extends WorkerHost {
   private readonly logger = new Logger(CopilotProcessor.name);
 
   constructor(
-    private readonly chatService: ChatService,
-    private readonly chatGateway: ChatGateway,
     private readonly aiService: CopilotAiService,
     private readonly drizzle: DrizzleService,
   ) {
     super();
   }
 
-  async process(job: Job): Promise<void> {
+  async process(job: Job): Promise<string | null> {
     if (job.name !== COPILOT_MESSAGE_JOB) {
-      return;
+      return null;
     }
 
-    // TODO: parse job data with zod schema
     const data = job.data as CopilotMessageJob;
     const { roomId, content } = data;
 
@@ -39,7 +34,7 @@ export class CopilotProcessor extends WorkerHost {
       const context = await this.aiService.buildContext(roomId);
 
       if (!content.toLowerCase().includes("@copilot")) {
-        return;
+        return null;
       }
 
       const response = await this.aiService.generateResponse(context, content);
@@ -57,17 +52,8 @@ export class CopilotProcessor extends WorkerHost {
         throw new Error("Failed to create copilot message");
       }
 
-      this.chatGateway.server.to(`room:${roomId}`).emit("message:new", {
-        id: message.id,
-        roomId,
-        senderId: COPILOT_USER_ID,
-        senderName: "Copilot",
-        senderEmail: "copilot@converge.local",
-        content: response,
-        createdAt: message.createdAt.toISOString(),
-      });
-
       this.logger.log(`Copilot responded in room ${roomId}`);
+      return message.id;
     } catch (error) {
       this.logger.error(`Copilot job failed for room ${roomId}:`, error);
 
@@ -97,15 +83,7 @@ export class CopilotProcessor extends WorkerHost {
         .returning();
 
       if (message) {
-        this.chatGateway.server.to(`room:${roomId}`).emit("message:new", {
-          id: message.id,
-          roomId,
-          senderId: COPILOT_USER_ID,
-          senderName: "Copilot",
-          senderEmail: "copilot@converge.local",
-          content: message.content,
-          createdAt: message.createdAt.toISOString(),
-        });
+        this.logger.log(`Copilot failure message created: ${message.id}`);
       }
     } catch (sendError) {
       this.logger.error(`Failed to send failure message:`, sendError);

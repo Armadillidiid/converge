@@ -11,6 +11,7 @@ import { ChatTypingService } from "./chat-typing.service.js";
 import { COPILOT_QUEUE } from "./copilot/types.js";
 import { BullBoardModule } from "@bull-board/nestjs";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { CopilotQueueEvents } from "./copilot/copilot-queue.events.ts";
 
 @Module({
   imports: [
@@ -26,7 +27,13 @@ import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
     }),
   ],
   controllers: [ChatController],
-  providers: [ChatService, ChatGateway, ChatPresenceService, ChatTypingService],
+  providers: [
+    ChatService,
+    ChatGateway,
+    ChatPresenceService,
+    ChatTypingService,
+    CopilotQueueEvents,
+  ],
   exports: [ChatService, ChatGateway],
 })
 export class ChatModule {}

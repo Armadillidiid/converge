@@ -4,6 +4,7 @@ import {
   Body,
   UseGuards,
   UseInterceptors,
+  UsePipes,
   UploadedFile,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -12,7 +13,8 @@ import { models } from "@repo/ai";
 import { AuthGuard } from "#src/modules/better-auth/guards/auth.guard.js";
 import { Session } from "#src/modules/better-auth/decorators.js";
 import type { UserSession } from "#src/modules/better-auth/guards/auth.guard.js";
-import { type SpeakInput } from "./ai-voice.contract.js";
+import { aiVoiceSchemas } from "./ai-voice.dto.js";
+import { ZodValidationPipe } from "#src/lib/validation-pipe.js";
 
 interface AudioFile {
   buffer: Buffer;
@@ -42,9 +44,10 @@ export class AiVoiceController {
   }
 
   @Post("speak")
+  @UsePipes(new ZodValidationPipe(aiVoiceSchemas.speakSchemaInput))
   async speak(
     @Session() _session: UserSession,
-    @Body() body: SpeakInput,
+    @Body() body: { text: string; voice?: string },
   ): Promise<{ audio: string }> {
     const result = await experimental_generateSpeech({
       model: models.speech("tts-1"),

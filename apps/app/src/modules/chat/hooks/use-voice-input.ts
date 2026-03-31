@@ -1,4 +1,9 @@
 import { useState, useRef, useCallback } from "react";
+import { client } from "@repo/sdk/client";
+
+interface TranscribeResponse {
+  text: string;
+}
 
 interface UseVoiceInputResult {
   isRecording: boolean;
@@ -65,18 +70,16 @@ export function useVoiceInput(): UseVoiceInputResult {
       const formData = new FormData();
       formData.append("audio", blob, "recording.webm");
 
-      const response = await fetch("/api/ai/voice/transcribe", {
-        method: "POST",
+      const response = await client.post<TranscribeResponse>({
+        url: "/ai/voice/transcribe",
         body: formData,
-        credentials: "include",
       });
 
-      if (!response.ok) {
+      if (response.data) {
+        setTranscript(response.data.text);
+      } else if (response.error) {
         throw new Error("Transcription failed");
       }
-
-      const data = await response.json();
-      setTranscript(data.text);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Transcription failed");
     } finally {

@@ -4,7 +4,7 @@ export class TokenCounter {
   private encoder: Tiktoken;
 
   constructor() {
-    this.encoder = encoding_for_model("gpt-5-mini");
+    this.encoder = encoding_for_model("gpt-4o-mini");
   }
 
   countTokens(text: string): number {

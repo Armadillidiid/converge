@@ -4,9 +4,17 @@ import { EmailService } from "./services/email.service.js";
 import { NodeMailerService } from "./services/nodemailer.service.js";
 import { EmailProcessor, EMAIL_QUEUE } from "./queue/email.processor.js";
 import { EmailQueueEvents } from "./queue/email.event.js";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { BullBoardModule } from "@bull-board/nestjs";
 
 @Module({
-  imports: [BullModule.registerQueue({ name: EMAIL_QUEUE })],
+  imports: [
+    BullModule.registerQueue({ name: EMAIL_QUEUE }),
+    BullBoardModule.forFeature({
+      name: EMAIL_QUEUE,
+      adapter: BullMQAdapter,
+    }),
+  ],
   providers: [
     NodeMailerService,
     EmailService,

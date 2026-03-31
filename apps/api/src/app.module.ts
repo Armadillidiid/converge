@@ -16,7 +16,7 @@ import { appConfig } from "./app.config.ts";
 import { JsonBodyMiddleware } from "./middlewares/body/json.body.middleware.js";
 import { RawBodyMiddleware } from "./middlewares/body/raw.body.middleware.js";
 import { UrlencodedBodyMiddleware } from "./middlewares/body/urlencoded.body.middleware.js";
-import { AppLoggerMiddleware } from "./middlewares/app-logger.middleware.ts";
+import { AppLoggerMiddleware } from "./middlewares/app-logger.middleware.js";
 
 @Module({
   imports: [

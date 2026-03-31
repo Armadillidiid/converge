@@ -9,6 +9,8 @@ import { ChatGateway } from "./chat.gateway.js";
 import { ChatPresenceService } from "./chat-presence.service.js";
 import { ChatTypingService } from "./chat-typing.service.js";
 import { COPILOT_QUEUE } from "./copilot/types.js";
+import { BullBoardModule } from "@bull-board/nestjs";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 
 @Module({
   imports: [
@@ -17,6 +19,10 @@ import { COPILOT_QUEUE } from "./copilot/types.js";
     RedisModule,
     BullModule.registerQueue({
       name: COPILOT_QUEUE,
+    }),
+    BullBoardModule.forFeature({
+      name: COPILOT_QUEUE,
+      adapter: BullMQAdapter,
     }),
   ],
   controllers: [ChatController],

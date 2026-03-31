@@ -8,6 +8,7 @@ Instructions:
 - Don't make up information`;
 
 export const COPILOT_MODEL_ID = "openai/gpt-4o-mini";
+export const COPILOT_TOKENIZER_MODEL_ID = "gpt-4o-mini";
 export const COPILOT_CONTEXT_PERCENTAGE = 0.8;
 
 // Fallback context limit if model info unavailable

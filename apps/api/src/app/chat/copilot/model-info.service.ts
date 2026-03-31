@@ -1,14 +1,16 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { RedisService } from "#src/modules/redis/redis.service.js";
 import { modelSchema, type ModelSchema } from "./models.schema.js";
 
 const MODELS_DEV_URL = "https://models.dev/api.json";
+const CACHE_KEY = "copilot:models";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 @Injectable()
 export class ModelInfoService {
   private readonly logger = new Logger(ModelInfoService.name);
-  private cache: Map<string, ModelSchema> = new Map();
-  private lastFetch: number = 0;
+
+  constructor(private readonly redis: RedisService) {}
 
   async getContextLimit(modelId: string): Promise<number> {
     const models = await this.fetchModels();
@@ -22,8 +24,10 @@ export class ModelInfoService {
   }
 
   private async fetchModels(): Promise<Record<string, ModelSchema>> {
-    if (this.cache.size > 0 && Date.now() - this.lastFetch < CACHE_TTL_MS) {
-      return Object.fromEntries(this.cache);
+    const cached = await this.redis.get<Record<string, ModelSchema>>(CACHE_KEY);
+    if (cached) {
+      this.logger.debug("Using cached model info from Redis");
+      return cached;
     }
 
     try {
@@ -37,18 +41,17 @@ export class ModelInfoService {
         const parsed = modelSchema.safeParse(model);
         if (parsed.success) {
           models[id] = parsed.data;
-          this.cache.set(id, parsed.data);
         }
       }
 
-      this.lastFetch = Date.now();
+      await this.redis.set(CACHE_KEY, models, { ttl: CACHE_TTL_MS });
       this.logger.log(
-        `Fetched ${Object.keys(models).length} models from models.dev`,
+        `Fetched and cached ${Object.keys(models).length} models`,
       );
       return models;
     } catch (error) {
       this.logger.error("Failed to fetch models", error);
-      return Object.fromEntries(this.cache);
+      return {};
     }
   }
 }

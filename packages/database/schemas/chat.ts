@@ -95,6 +95,7 @@ export const chatInvitation = pgTable(
   (table) => [
     index("chat_invitation_room_id_idx").on(table.roomId),
     index("chat_invitation_invitee_id_idx").on(table.inviteeId),
+    index("chat_message_room_created_idx").on(table.roomId, table.createdAt),
   ],
 );
 

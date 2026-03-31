@@ -10,6 +10,7 @@ import {
   COPILOT_CONTEXT_FALLBACK,
   COPILOT_MODEL_ID,
   MAX_MESSAGES_FETCH,
+  COPILOT_TOKENIZER_MODEL_ID,
 } from "./constants.js";
 import { TokenCounter } from "./token-counter.js";
 import { ModelInfoService } from "./model-info.service.js";
@@ -28,7 +29,7 @@ export class CopilotAiService {
     private readonly drizzle: DrizzleService,
     private readonly modelInfo: ModelInfoService,
   ) {
-    this.tokenCounter = new TokenCounter();
+    this.tokenCounter = new TokenCounter(COPILOT_TOKENIZER_MODEL_ID);
   }
 
   async buildContext(roomId: string): Promise<ContextMessage[]> {

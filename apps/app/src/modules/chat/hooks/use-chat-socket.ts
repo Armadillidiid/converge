@@ -12,7 +12,7 @@ import {
   chatGetPresenceOptions,
   chatGetTypingOptions,
 } from "@repo/sdk/tanstack";
-import { CHAT_EVENTS, SERVER_CHAT_EVENTS } from "@repo/sdk";
+import { CHAT_EVENTS } from "../constants/chat.constant";
 
 export function useChatSocket(roomId: string) {
   const { socket, isConnected } = useChatContext();
@@ -84,15 +84,15 @@ export function useChatSocket(roomId: string) {
       }
     };
 
-    socket.on(SERVER_CHAT_EVENTS.MESSAGE_NEW, handleNewMessage);
-    socket.on(SERVER_CHAT_EVENTS.USER_PRESENCE, handlePresence);
-    socket.on(SERVER_CHAT_EVENTS.USER_TYPING, handleTyping);
+    socket.on(CHAT_EVENTS.MESSAGE_NEW, handleNewMessage);
+    socket.on(CHAT_EVENTS.USER_PRESENCE, handlePresence);
+    socket.on(CHAT_EVENTS.USER_TYPING, handleTyping);
 
     return () => {
       socket.emit(CHAT_EVENTS.LEAVE_ROOM, { roomId });
-      socket.off(SERVER_CHAT_EVENTS.MESSAGE_NEW, handleNewMessage);
-      socket.off(SERVER_CHAT_EVENTS.USER_PRESENCE, handlePresence);
-      socket.off(SERVER_CHAT_EVENTS.USER_TYPING, handleTyping);
+      socket.off(CHAT_EVENTS.MESSAGE_NEW, handleNewMessage);
+      socket.off(CHAT_EVENTS.USER_PRESENCE, handlePresence);
+      socket.off(CHAT_EVENTS.USER_TYPING, handleTyping);
     };
   }, [socket, isConnected, roomId]);
 

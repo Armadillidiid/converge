@@ -10,6 +10,7 @@ import { TypingIndicator } from "./typing-indicator";
 import { MembersSidebar } from "./members-sidebar";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { auth } from "@/shared/lib/auth";
+import { parseISO, compareAsc } from "date-fns";
 
 interface ChatViewProperties {
   roomId: string;
@@ -83,24 +84,34 @@ export function ChatView({ roomId }: ChatViewProperties) {
 
         <ScrollArea className="flex-1 p-4">
           <div className="flex flex-col gap-2">
-            {allMessages.map((msg) => {
-              const senderInfo = getSenderInfo(msg.senderId);
-              const createdAt = msg.createdAt
-                ? new Date(msg.createdAt as string)
-                : new Date();
-              return (
-                <MessageItem
-                  key={msg.id}
-                  id={msg.id}
-                  senderId={msg.senderId}
-                  senderName={senderInfo.senderName}
-                  senderEmail={senderInfo.senderEmail}
-                  content={msg.content}
-                  createdAt={createdAt.toISOString()}
-                  currentUserId={currentUserId}
-                />
-              );
-            })}
+            {[...allMessages]
+              .sort((a, b) => {
+                const da = a.createdAt
+                  ? parseISO(String(a.createdAt))
+                  : new Date(0);
+                const db = b.createdAt
+                  ? parseISO(String(b.createdAt))
+                  : new Date(0);
+                return compareAsc(da, db);
+              })
+              .map((msg) => {
+                const senderInfo = getSenderInfo(msg.senderId);
+                const createdAt = msg.createdAt
+                  ? new Date(msg.createdAt as string)
+                  : new Date();
+                return (
+                  <MessageItem
+                    key={msg.id}
+                    id={msg.id}
+                    senderId={msg.senderId}
+                    senderName={senderInfo.senderName}
+                    senderEmail={senderInfo.senderEmail}
+                    content={msg.content}
+                    createdAt={createdAt.toISOString()}
+                    currentUserId={currentUserId}
+                  />
+                );
+              })}
             <div ref={scrollReference} />
           </div>
         </ScrollArea>

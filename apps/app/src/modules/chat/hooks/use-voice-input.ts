@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback } from "react";
-import { sdkClient } from "@/shared/lib/sdk";
 
 interface UseVoiceInputResult {
   isRecording: boolean;
@@ -63,23 +62,21 @@ export function useVoiceInput(): UseVoiceInputResult {
     setError(null);
 
     try {
-      const arrayBuffer = await blob.arrayBuffer();
-      const base64 = btoa(
-        new Uint8Array(arrayBuffer).reduce(
-          (data, byte) => data + String.fromCharCode(byte),
-          "",
-        ),
-      );
+      const formData = new FormData();
+      formData.append("audio", blob, "recording.webm");
 
-      const response = await sdkClient.ai.transcribe({
-        body: { audio: base64 },
+      const response = await fetch("/api/ai/voice/transcribe", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
       });
 
-      if (!response.data) {
+      if (!response.ok) {
         throw new Error("Transcription failed");
       }
 
-      setTranscript(response.data.text);
+      const data = await response.json();
+      setTranscript(data.text);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Transcription failed");
     } finally {

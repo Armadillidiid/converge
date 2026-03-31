@@ -16,16 +16,12 @@ import { ChatTypingService } from "./chat-typing.service.js";
 import { SocketIOAuthService } from "#src/modules/better-auth/guards/socket-io-auth.service.js";
 import { SocketIOAuthGuard } from "#src/modules/better-auth/guards/socket-io-auth.guard.js";
 import {
-  CHAT_EVENTS,
   wsJoinRoomInputSchema,
   wsLeaveRoomInputSchema,
   wsSendMessageInputSchema,
   wsTypingInputSchema,
-  type WsJoinRoomInput,
-  type WsLeaveRoomInput,
-  type WsSendMessageInput,
-  type WsTypingInput,
 } from "./chat-events.contract.js";
+import { CHAT_EVENTS } from "./chat.constant.ts";
 
 interface AuthenticatedSocket extends Socket {
   data: {

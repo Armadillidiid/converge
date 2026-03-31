@@ -1,0 +1,1 @@
+CREATE INDEX "chat_message_room_created_idx" ON "chat_invitation" ("room_id","created_at");

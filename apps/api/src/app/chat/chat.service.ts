@@ -324,6 +324,10 @@ export class ChatService {
       throw new NotFoundException("You are not a member of this room");
     }
 
+    // TODO: add logic to transfer ownership if the owner leaves. For now, we just delete the room if the owner leaves.
+
+    // TODO: Add soft delete so when a member leaves, we can still link messages attributed to that member int the room.
+
     await this.drizzle.db
       .delete(schema.chatMember)
       .where(eq(schema.chatMember.id, membership.id));

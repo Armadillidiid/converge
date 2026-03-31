@@ -439,12 +439,12 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "inviteeId": {
+                  "email": {
                     "type": "string",
-                    "minLength": 1
+                    "format": "email"
                   }
                 },
-                "required": ["inviteeId"]
+                "required": ["email"]
               }
             }
           }

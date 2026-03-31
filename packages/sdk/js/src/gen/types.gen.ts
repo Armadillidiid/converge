@@ -204,7 +204,7 @@ export type ChatCreateMessageResponse =
 
 export type ChatInviteMemberData = {
   body: {
-    inviteeId: string;
+    email: string;
   };
   path: {
     id: string;

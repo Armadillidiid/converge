@@ -129,7 +129,7 @@ export class ChatService {
   async inviteMember(
     inviterId: string,
     roomId: string,
-    inviteeId: string,
+    email: string,
   ): Promise<InvitationDto> {
     const [room] = await this.drizzle.db
       .select()
@@ -145,6 +145,16 @@ export class ChatService {
       throw new ForbiddenException("Only room owner can invite members");
     }
 
+    const [invitee] = await this.drizzle.db
+      .select()
+      .from(schema.user)
+      .where(eq(schema.user.email, email))
+      .limit(1);
+
+    if (!invitee) {
+      throw new NotFoundException("User not found");
+    }
+
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     const [invitation] = await this.drizzle.db
@@ -152,7 +162,7 @@ export class ChatService {
       .values({
         roomId,
         inviterId,
-        inviteeId,
+        inviteeId: invitee.id,
         status: "pending",
         expiresAt,
       })

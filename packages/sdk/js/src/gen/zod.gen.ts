@@ -168,7 +168,7 @@ export const zChatCreateMessageResponse = z.object({
 
 export const zChatInviteMemberData = z.object({
   body: z.object({
-    inviteeId: z.string().min(1),
+    email: z.email(),
   }),
   path: z.object({
     id: z.string(),

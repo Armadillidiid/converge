@@ -20,7 +20,7 @@ export function ChatIdView({ roomId }: ChatIdViewProps) {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
+    <div className="flex h-[calc(100vh)]">
       <ChatErrorBoundary>
         <Suspense fallback={<RoomListSidebarSkeleton />}>
           <RoomListSidebar

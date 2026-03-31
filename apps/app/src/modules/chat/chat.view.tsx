@@ -19,7 +19,7 @@ export function ChatView() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
+    <div className="flex h-[calc(100vh)]">
       <ChatErrorBoundary>
         <Suspense fallback={<RoomListSidebarSkeleton />}>
           <RoomListSidebar

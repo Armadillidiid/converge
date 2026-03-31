@@ -1,9 +1,6 @@
 import { useState, useRef, useCallback } from "react";
-import { client } from "@repo/sdk/client";
-
-interface TranscribeResponse {
-  text: string;
-}
+import { env } from "@/env";
+import { readAuthTokenFromDocumentCookie } from "@/shared/lib/auth-token-cookie";
 
 interface UseVoiceInputResult {
   isRecording: boolean;
@@ -70,16 +67,23 @@ export function useVoiceInput(): UseVoiceInputResult {
       const formData = new FormData();
       formData.append("audio", blob, "recording.webm");
 
-      const response = await client.post<TranscribeResponse>({
-        url: "/ai/voice/transcribe",
-        body: formData,
-      });
+      const token = readAuthTokenFromDocumentCookie();
+      const response = await fetch(
+        `${env.NEXT_PUBLIC_API_BASE_URL}/ai/voice/transcribe`,
+        {
+          method: "POST",
+          body: formData,
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
+        },
+      );
 
-      if (response.data) {
-        setTranscript(response.data.text);
-      } else if (response.error) {
+      if (!response.ok) {
         throw new Error("Transcription failed");
       }
+
+      const data = await response.json();
+      setTranscript(data.text);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Transcription failed");
     } finally {

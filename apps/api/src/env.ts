@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { schema as dbSchema } from "@repo/database/keys";
 import { schema as authSchema } from "@repo/auth/keys";
+import { schema as aiSchema } from "@repo/ai/keys";
 
 const PORT = 4448;
 export const _API_PREFIX = "api";
@@ -14,11 +15,7 @@ const baseSchema = z.object({
   // App
   APP_PORT: z.coerce.number().int().positive().optional().default(PORT),
   APP_PREFIX: z.string().min(1).optional().default(_API_PREFIX),
-  APP_FRONTEND_URL: z
-    .string()
-    .min(1)
-    .optional()
-    .default("http://converge.co"),
+  APP_FRONTEND_URL: z.string().min(1).optional().default("http://converge.co"),
   APP_BACKEND_URL: z
     .string()
     .min(1)
@@ -51,6 +48,7 @@ const baseSchema = z.object({
 export const envSchema = baseSchema
   .extend(dbSchema.shape)
   .extend(authSchema.shape)
+  .extend(aiSchema.shape)
   .refine(
     (v) =>
       !(

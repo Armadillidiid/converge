@@ -8,6 +8,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
+import { SparklesIcon } from "lucide-react";
+
+const COPILOT_USER_ID = "copilot";
 
 interface MessageItemProperties {
   id: string;
@@ -28,6 +31,7 @@ export function MessageItem({
   currentUserId,
 }: MessageItemProperties) {
   const isOwn = senderId === currentUserId;
+  const isCopilot = senderId === COPILOT_USER_ID;
   const createdAtDate = new Date(createdAt);
 
   return (
@@ -35,13 +39,29 @@ export function MessageItem({
       className={cn(
         "flex gap-3 p-2 rounded-lg hover:bg-muted/50",
         isOwn && "flex-row-reverse",
+        isCopilot && "bg-primary/5 border-l-2 border-primary",
       )}
     >
-      <Avatar name={senderName} email={senderEmail} className="w-8 h-8" />
+      {isCopilot ? (
+        <div className="flex items-center justify-center w-8 h-8 shrink-0 rounded-full bg-primary/10">
+          <SparklesIcon className="size-4 text-primary" />
+        </div>
+      ) : (
+        <Avatar name={senderName} email={senderEmail} className="w-8 h-8" />
+      )}
 
       <div className={cn("flex flex-col gap-1", isOwn && "items-end")}>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{senderName}</span>
+          <span
+            className={cn("text-sm font-medium", isCopilot && "text-primary")}
+          >
+            {senderName}
+          </span>
+          {isCopilot && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+              AI
+            </span>
+          )}
           <Tooltip>
             <TooltipTrigger
               render={
@@ -53,7 +73,7 @@ export function MessageItem({
             <TooltipContent>{createdAtDate.toLocaleString()}</TooltipContent>
           </Tooltip>
         </div>
-        <p className="text-sm">{content}</p>
+        <p className="text-sm whitespace-pre-wrap">{content}</p>
       </div>
     </div>
   );

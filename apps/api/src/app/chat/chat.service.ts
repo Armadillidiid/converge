@@ -3,9 +3,12 @@ import {
   NotFoundException,
   ForbiddenException,
 } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
 import { eq, and, desc, inArray } from "@repo/database";
 import { schema } from "@repo/database";
+import { COPILOT_USER_ID } from "@repo/database/constants";
 import {
   roomDto,
   roomWithMembersDto,
@@ -26,6 +29,7 @@ import {
 } from "./chat.contract.js";
 import { ChatPresenceService } from "./chat-presence.service.js";
 import { ChatTypingService } from "./chat-typing.service.js";
+import { COPILOT_QUEUE, COPILOT_MESSAGE_JOB } from "./copilot/types.js";
 
 @Injectable()
 export class ChatService {
@@ -33,6 +37,7 @@ export class ChatService {
     private readonly drizzle: DrizzleService,
     private readonly presenceService: ChatPresenceService,
     private readonly typingService: ChatTypingService,
+    @InjectQueue(COPILOT_QUEUE) private readonly copilotQueue: Queue,
   ) {}
 
   async createRoom(userId: string, data: CreateRoomInput): Promise<RoomDto> {
@@ -52,6 +57,12 @@ export class ChatService {
       roomId: room.id,
       userId: userId,
       role: "owner",
+    });
+
+    await this.drizzle.db.insert(schema.chatMember).values({
+      roomId: room.id,
+      userId: COPILOT_USER_ID,
+      role: "member",
     });
 
     return roomDto.parse(room);
@@ -309,6 +320,15 @@ export class ChatService {
 
     if (!message) {
       throw new Error("Failed to create message");
+    }
+
+    if (data.content.toLowerCase().includes("@copilot")) {
+      await this.copilotQueue.add(COPILOT_MESSAGE_JOB, {
+        messageId: message.id,
+        roomId,
+        senderId,
+        content: data.content,
+      });
     }
 
     return messageDto.parse(message);

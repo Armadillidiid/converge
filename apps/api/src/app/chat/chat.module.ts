@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { BullModule } from "@nestjs/bullmq";
 import { AuthModule } from "#src/modules/auth/auth.module.js";
 import { DrizzleModule } from "#src/modules/drizzle/drizzle.module.js";
 import { RedisModule } from "#src/modules/redis/redis.module.js";
@@ -7,10 +8,19 @@ import { ChatService } from "./chat.service.js";
 import { ChatGateway } from "./chat.gateway.js";
 import { ChatPresenceService } from "./chat-presence.service.js";
 import { ChatTypingService } from "./chat-typing.service.js";
+import { COPILOT_QUEUE } from "./copilot/types.js";
 
 @Module({
-  imports: [AuthModule, DrizzleModule, RedisModule],
+  imports: [
+    AuthModule,
+    DrizzleModule,
+    RedisModule,
+    BullModule.registerQueue({
+      name: COPILOT_QUEUE,
+    }),
+  ],
   controllers: [ChatController],
   providers: [ChatService, ChatGateway, ChatPresenceService, ChatTypingService],
+  exports: [ChatService, ChatGateway],
 })
 export class ChatModule {}

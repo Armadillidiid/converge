@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  MentionMenu,
+  mentionCommands,
+  type MentionCommand,
+} from "./mention-menu";
 
 interface ChatInputProperties {
   onSend: (content: string) => void;
@@ -18,9 +23,45 @@ export function ChatInput({
   disabled,
 }: ChatInputProperties) {
   const [content, setContent] = useState("");
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionStartIndex, setMentionStartIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState({ top: 0, left: 0 });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutReference = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+
+  const filteredCommands = mentionCommands.filter((cmd) =>
+    cmd.name.startsWith(mentionQuery.toLowerCase()),
+  );
+
+  const updateCursorPosition = useCallback(() => {
+    if (!textareaRef.current) return;
+
+    const textarea = textareaRef.current;
+    const rect = textarea.getBoundingClientRect();
+    const text = textarea.value.substring(0, textarea.selectionStart);
+    const lines = text.split("\n");
+    const currentLine = lines.length - 1;
+
+    const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20;
+    const paddingTop = parseInt(getComputedStyle(textarea).paddingTop) || 0;
+
+    const top =
+      rect.top +
+      paddingTop +
+      currentLine * lineHeight -
+      textarea.scrollTop +
+      lineHeight;
+
+    const charWidth = parseInt(getComputedStyle(textarea).fontSize) * 0.6;
+    const lastLineLength = lines[currentLine]?.length || 0;
+    const left = rect.left + lastLineLength * charWidth * 0.5;
+
+    setCursorPosition({ top, left });
+  }, []);
 
   const handleTyping = useCallback(() => {
     onTypingStart();
@@ -32,6 +73,113 @@ export function ChatInput({
     }, 2000);
   }, [onTypingStart, onTypingStop]);
 
+  const handleContentChange = useCallback(
+    (value: string, cursorPos: number) => {
+      setContent(value);
+
+      const lastAtIndex = value.lastIndexOf("@", cursorPos - 1);
+      const hasMentionTrigger = lastAtIndex !== -1;
+
+      if (hasMentionTrigger) {
+        const textAfterAt = value.substring(lastAtIndex + 1, cursorPos);
+        const hasSpaceAfterAt = textAfterAt.includes(" ");
+
+        if (!hasSpaceAfterAt) {
+          const query = textAfterAt;
+          setMentionStartIndex(lastAtIndex);
+          setMentionQuery(query);
+          setShowMentions(true);
+          setSelectedIndex(0);
+          updateCursorPosition();
+          return;
+        }
+      }
+
+      setShowMentions(false);
+      setMentionQuery("");
+    },
+    [updateCursorPosition],
+  );
+
+  const handleMentionSelect = useCallback(
+    (command: MentionCommand) => {
+      if (!textareaRef.current) return;
+
+      const textarea = textareaRef.current;
+      const beforeMention = content.substring(0, mentionStartIndex);
+      const afterCursor = content.substring(textarea.selectionStart);
+      const newContent = `${beforeMention}${command.display} ${afterCursor}`;
+
+      setContent(newContent);
+      setShowMentions(false);
+      setMentionQuery("");
+
+      const newCursorPos = beforeMention.length + command.display.length + 1;
+      setTimeout(() => {
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        textarea.focus();
+      }, 0);
+    },
+    [content, mentionStartIndex],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (showMentions && filteredCommands.length > 0) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setSelectedIndex((i) => Math.min(i + 1, filteredCommands.length - 1));
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setSelectedIndex((i) => Math.max(i - 1, 0));
+          return;
+        }
+        if (e.key === "Enter" || e.key === "Tab") {
+          e.preventDefault();
+          handleMentionSelect(filteredCommands[selectedIndex]);
+          return;
+        }
+        if (e.key === "Escape") {
+          setShowMentions(false);
+          return;
+        }
+      }
+
+      if (e.key === "Enter" && !e.shiftKey && !showMentions) {
+        e.preventDefault();
+        const trimmed = content.trim();
+        if (!trimmed) return;
+        onSend(trimmed);
+        setContent("");
+        onTypingStop();
+      }
+    },
+    [
+      showMentions,
+      filteredCommands,
+      selectedIndex,
+      content,
+      onSend,
+      onTypingStop,
+      handleMentionSelect,
+    ],
+  );
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const handleSelectionChange = () => {
+      const pos = textarea.selectionStart;
+      handleContentChange(content, pos);
+    };
+
+    textarea.addEventListener("click", handleSelectionChange);
+    return () => textarea.removeEventListener("click", handleSelectionChange);
+  }, [content, handleContentChange]);
+
   const handleSubmit = useCallback(() => {
     const trimmed = content.trim();
     if (!trimmed) return;
@@ -41,20 +189,25 @@ export function ChatInput({
   }, [content, onSend, onTypingStop]);
 
   return (
-    <div className="flex gap-2 p-4 border-t bg-background">
+    <div className="relative flex gap-2 p-4 border-t bg-background">
+      {showMentions && filteredCommands.length > 0 && (
+        <MentionMenu
+          query={mentionQuery}
+          position={cursorPosition}
+          onSelect={handleMentionSelect}
+          onClose={() => setShowMentions(false)}
+          selectedIndex={selectedIndex}
+        />
+      )}
       <Textarea
+        ref={textareaRef}
         value={content}
         onChange={(e) => {
-          setContent(e.target.value);
+          handleContentChange(e.target.value, e.target.selectionStart);
           handleTyping();
         }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSubmit();
-          }
-        }}
-        placeholder="Type a message..."
+        onKeyDown={handleKeyDown}
+        placeholder="Type a message... Use @copilot to invoke AI"
         disabled={disabled}
         className="min-h-[40px] max-h-[120px] resize-none"
       />

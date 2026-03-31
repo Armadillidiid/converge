@@ -2,10 +2,15 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { ChatService } from "./chat.service.js";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
+import { ChatPresenceService } from "./chat-presence.service.js";
+import { ChatTypingService } from "./chat-typing.service.js";
+import { COPILOT_QUEUE } from "./copilot/types.js";
+import { Queue } from "bullmq";
 
 describe("ChatService", () => {
   let service: ChatService;
   let mockDb: any;
+  let mockQueue: any;
 
   beforeEach(async () => {
     const mockInsert = vi.fn().mockReturnThis();
@@ -34,12 +39,32 @@ describe("ChatService", () => {
       delete: mockDelete,
     };
 
+    mockQueue = {
+      add: vi.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ChatService,
         {
           provide: DrizzleService,
           useValue: { db: mockDb },
+        },
+        {
+          provide: ChatPresenceService,
+          useValue: {
+            getOnlineUsers: vi.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: ChatTypingService,
+          useValue: {
+            getTypingUsers: vi.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: `BullQueue_${COPILOT_QUEUE}`,
+          useValue: mockQueue,
         },
       ],
     }).compile();

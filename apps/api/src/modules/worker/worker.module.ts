@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { BullMqModule } from "../bullmq/bullmq.module.js";
 import { EmailModule } from "../email/email.module.js";
+import { CopilotModule } from "../../app/chat/copilot/copilot.module.js";
 import { appConfig } from "../../app.config.js";
 
 /**
@@ -16,6 +17,7 @@ import { appConfig } from "../../app.config.js";
     }),
     BullMqModule,
     EmailModule,
+    CopilotModule,
   ],
 })
 export class WorkerModule {}

@@ -1,4 +1,4 @@
-# Agent Guidelines 
+# Agent Guidelines
 
 This document provides guidelines for AI coding agents working in this repository.
 
@@ -20,7 +20,6 @@ packages/
   email/        - Email templates
   next-config/  - Shared Next.js config
   observability/ - Sentry integration
-  seo/          - SEO utilities
   typescript-config/ - Shared TypeScript config
 ```
 

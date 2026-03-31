@@ -23,7 +23,6 @@
     "@repo/next-config": "workspace:*",
     "@repo/observability": "workspace:*",
     "@repo/sdk": "workspace:*",
-    "@repo/seo": "workspace:*",
     "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-form": "catalog:",

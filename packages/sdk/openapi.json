@@ -914,6 +914,111 @@
           }
         }
       }
+    },
+    "/ai/voice/speak": {
+      "post": {
+        "operationId": "ai.speak",
+        "description": "Convert text to speech",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  },
+                  "voice": {
+                    "enum": [
+                      "alloy",
+                      "echo",
+                      "fable",
+                      "onyx",
+                      "nova",
+                      "shimmer"
+                    ]
+                  }
+                },
+                "required": ["text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["audio"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/voice/transcribe": {
+      "post": {
+        "operationId": "ai.transcribe",
+        "description": "Convert speech to text",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "audio": {
+                    "type": "string",
+                    "contentMediaType": "*/*"
+                  }
+                },
+                "required": ["audio"]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "audio": {
+                    "type": "string",
+                    "contentMediaType": "*/*"
+                  }
+                },
+                "required": ["audio"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["text"]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

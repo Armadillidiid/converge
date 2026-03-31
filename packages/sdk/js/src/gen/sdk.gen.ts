@@ -3,6 +3,10 @@
 import type { Client, Options as Options2, TDataShape } from "./client";
 import { client } from "./client.gen";
 import type {
+  AiSpeakData,
+  AiSpeakResponses,
+  AiTranscribeData,
+  AiTranscribeResponses,
   ChatAcceptInvitationData,
   ChatAcceptInvitationResponses,
   ChatCreateRoomData,
@@ -31,6 +35,10 @@ import type {
   ChatLeaveRoomResponses,
 } from "./types.gen";
 import {
+  zAiSpeakData,
+  zAiSpeakResponse,
+  zAiTranscribeData,
+  zAiTranscribeResponse,
   zChatAcceptInvitationData,
   zChatAcceptInvitationResponse,
   zChatCreateRoomData,
@@ -389,6 +397,55 @@ export class Chat extends HeyApiClient {
   }
 }
 
+export class Ai extends HeyApiClient {
+  /**
+   * Convert text to speech
+   */
+  public speak<ThrowOnError extends boolean = false>(
+    options: Options<AiSpeakData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).post<
+      AiSpeakResponses,
+      unknown,
+      ThrowOnError
+    >({
+      requestValidator: async (data) => await zAiSpeakData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zAiSpeakResponse.parseAsync(data),
+      url: "/ai/voice/speak",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Convert speech to text
+   */
+  public transcribe<ThrowOnError extends boolean = false>(
+    options: Options<AiTranscribeData, ThrowOnError>,
+  ) {
+    return (options.client ?? this.client).post<
+      AiTranscribeResponses,
+      unknown,
+      ThrowOnError
+    >({
+      requestValidator: async (data) =>
+        await zAiTranscribeData.parseAsync(data),
+      responseValidator: async (data) =>
+        await zAiTranscribeResponse.parseAsync(data),
+      url: "/ai/voice/transcribe",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+}
+
 export class ApiClient extends HeyApiClient {
   public static readonly __registry = new HeyApiRegistry<ApiClient>();
 
@@ -400,5 +457,10 @@ export class ApiClient extends HeyApiClient {
   private _chat?: Chat;
   get chat(): Chat {
     return (this._chat ??= new Chat({ client: this.client }));
+  }
+
+  private _ai?: Ai;
+  get ai(): Ai {
+    return (this._ai ??= new Ai({ client: this.client }));
   }
 }

@@ -12,7 +12,7 @@ export const aiVoiceSchemas = {
   }),
 
   transcribeSchemaInput: z.object({
-    audio: z.file(),
+    audio: z.string(),
   }),
   transcribeSchemaOutput: z.object({
     text: z.string(),

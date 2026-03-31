@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { env } from "@/env";
+import { sdkClient } from "@/shared/lib/sdk";
 
 type Voice = "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
 
@@ -22,36 +22,25 @@ export function useTTS(): UseTTSResult {
     try {
       setError(null);
 
-      // Check cache first
       const cacheKey = `${text}-${voice}`;
       let audioUrl = cacheRef.current.get(cacheKey);
 
       if (!audioUrl) {
         setIsLoading(true);
 
-        const response = await fetch(
-          `${env.NEXT_PUBLIC_API_BASE_URL}/ai/voice/speak`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ text, voice }),
-            credentials: "include",
-          },
-        );
+        const response = await sdkClient.ai.speak({
+          body: { text, voice },
+        });
 
-        if (!response.ok) {
+        if (!response.data) {
           throw new Error("Speech generation failed");
         }
 
-        const data = await response.json();
-        audioUrl = `data:audio/mpeg;base64,${data.audio}`;
+        audioUrl = `data:audio/mpeg;base64,${response.data.audio}`;
         cacheRef.current.set(cacheKey, audioUrl);
         setIsLoading(false);
       }
 
-      // Stop any currently playing audio
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;

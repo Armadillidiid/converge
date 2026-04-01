@@ -4,7 +4,7 @@ import { DrizzleModule } from "#src/modules/drizzle/drizzle.module.js";
 import { RedisModule } from "#src/modules/redis/redis.module.js";
 import { CopilotProcessor } from "./copilot.processor.js";
 import { CopilotAiService } from "./copilot-ai.service.js";
-import { CopilotRateLimit } from "./copilot.rate-limit.ts";
+import { CopilotRateLimit } from "./copilot.rate-limit.js";
 import { ModelInfoService } from "./model-info.service.js";
 import { CompactionService } from "./compaction.service.js";
 import { CompactionProcessor } from "./compaction.processor.js";
@@ -32,10 +32,9 @@ import { COMPACTION_QUEUE } from "./compaction.types.js";
   ],
   exports: [
     CopilotAiService,
-    CopilotRateLimitGuard,
+    CopilotRateLimit,
     ModelInfoService,
     CompactionService,
   ],
-  exports: [CopilotAiService, CopilotRateLimit, ModelInfoService],
 })
 export class CopilotModule {}

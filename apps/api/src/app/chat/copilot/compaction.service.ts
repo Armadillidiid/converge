@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
-import { eq, desc, and, gt, lt, or, isNull } from "@repo/database";
+import { eq, desc, and, gt } from "@repo/database";
 import { schema } from "@repo/database";
 import { models, generateText } from "@repo/ai";
 import {
@@ -11,11 +11,11 @@ import {
   compactionJobSchema,
 } from "./compaction.types.js";
 import { TokenCounter } from "./token-counter.js";
+import { ModelInfoService } from "./model-info.service.js";
 import {
   COPILOT_MODEL_ID,
   COPILOT_TOKENIZER_MODEL_ID,
   COPILOT_CONTEXT_PERCENTAGE,
-  COPILOT_CONTEXT_FALLBACK,
 } from "./constants.js";
 
 const SUMMARY_PROMPT = `Summarize the following conversation in a way that preserves important context for continuing the discussion. Include:
@@ -53,6 +53,7 @@ export class CompactionService {
 
   constructor(
     private readonly drizzle: DrizzleService,
+    private readonly modelInfo: ModelInfoService,
     @InjectQueue(COMPACTION_QUEUE) private readonly compactionQueue: Queue,
   ) {
     this.tokenCounter = new TokenCounter(COPILOT_TOKENIZER_MODEL_ID);
@@ -68,7 +69,7 @@ export class CompactionService {
   }
 
   async shouldCompact(roomId: string): Promise<boolean> {
-    const contextLimit = await this.getContextLimit();
+    const contextLimit = await this.modelInfo.getContextLimit(COPILOT_MODEL_ID);
     const threshold = contextLimit * COMPACTION_THRESHOLD;
 
     const latestSummary = await this.getLatestSummary(roomId);
@@ -173,10 +174,5 @@ export class CompactionService {
       .orderBy(schema.chatMessage.createdAt);
 
     return messages;
-  }
-
-  async getContextLimit(): Promise<number> {
-    const fallback = COPILOT_CONTEXT_FALLBACK;
-    return Math.floor(fallback * COPILOT_CONTEXT_PERCENTAGE);
   }
 }

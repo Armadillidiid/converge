@@ -1,6 +1,6 @@
 import { chatContract } from "./app/chat/chat.contract.js";
 import * as chatEvents from "./app/chat/chat-events.contract.js";
-import { aiVoiceContract } from "./app/ai/ai-voice.contract.ts";
+import { aiVoiceContract } from "./app/ai/ai-voice.contract.js";
 
 export const router = {
   chat: chatContract,

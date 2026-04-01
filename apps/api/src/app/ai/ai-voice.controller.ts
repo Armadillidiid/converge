@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Post,
   Body,
@@ -29,13 +30,38 @@ interface AudioFile {
 @UseGuards(AuthGuard)
 export class AiVoiceController {
   @Post("transcribe")
-  @UseInterceptors(FileInterceptor("audio"))
+  @UseInterceptors(
+    FileInterceptor("audio", {
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
+      fileFilter: (_request, file, callback) => {
+        const allowedMimeTypes = new Set([
+          "audio/webm",
+          "audio/mp4",
+          "audio/mpeg",
+          "audio/ogg",
+          "audio/wav",
+        ]);
+
+        if (!allowedMimeTypes.has(file.mimetype)) {
+          callback(
+            new BadRequestException("Unsupported audio file type"),
+            false,
+          );
+          return;
+        }
+
+        callback(null, true);
+      },
+    }),
+  )
   async transcribe(
     @Session() _session: UserSession,
     @UploadedFile() file: AudioFile | undefined,
   ): Promise<{ text: string }> {
     if (!file) {
-      throw new Error("No audio file provided");
+      throw new BadRequestException("No audio file provided");
     }
 
     const result = await experimental_transcribe({

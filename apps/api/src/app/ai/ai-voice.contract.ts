@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
-import { aiVoiceSchemas } from "./ai-voice.dto.ts";
+import { aiVoiceSchemas } from "./ai-voice.dto.js";
 
 export const aiVoiceContract = {
   speak: oc

@@ -239,7 +239,6 @@ export class BackendStack extends cdk.Stack {
     // S3 bucket for pipeline artifacts
     const artifactBucket = new s3.Bucket(this, "ApiPipelineArtifacts", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
       encryption: s3.BucketEncryption.S3_MANAGED,
     });
 

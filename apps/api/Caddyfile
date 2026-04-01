@@ -1,6 +1,10 @@
 converge-api.emmanuelisenah.com {
   encode gzip zstd
 
+  handle /.well-known/acme-challenge/* {
+    file_server
+  }
+
   @mailpit path /mailpit*
   handle @mailpit {
     basicauth {

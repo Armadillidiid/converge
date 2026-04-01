@@ -362,3 +362,36 @@ export const zChatLeaveRoomData = z.object({
 export const zChatLeaveRoomResponse = z.object({
   success: z.boolean(),
 });
+
+export const zAiSpeakData = z.object({
+  body: z.object({
+    text: z.string().min(1).max(4096),
+    voice: z
+      .enum(["alloy", "echo", "fable", "onyx", "nova", "shimmer"])
+      .optional(),
+  }),
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+/**
+ * OK
+ */
+export const zAiSpeakResponse = z.object({
+  audio: z.string(),
+});
+
+export const zAiTranscribeData = z.object({
+  body: z.object({
+    audio: z.string(),
+  }),
+  path: z.never().optional(),
+  query: z.never().optional(),
+});
+
+/**
+ * OK
+ */
+export const zAiTranscribeResponse = z.object({
+  text: z.string(),
+});

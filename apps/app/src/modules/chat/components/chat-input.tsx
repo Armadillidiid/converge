@@ -3,11 +3,13 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { MicIcon, Loader2Icon } from "lucide-react";
 import {
   MentionMenu,
   mentionCommands,
   type MentionCommand,
 } from "./mention-menu";
+import { useVoiceInput } from "../hooks/use-voice-input";
 
 interface ChatInputProperties {
   onSend: (content: string) => void;
@@ -32,6 +34,31 @@ export function ChatInput({
   const typingTimeoutReference = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+
+  const {
+    isRecording,
+    isTranscribing,
+    transcript,
+    error: voiceError,
+    startRecording,
+    stopRecording,
+    resetTranscript,
+  } = useVoiceInput();
+
+  // Apply transcript to content when ready
+  useEffect(() => {
+    if (transcript) {
+      setContent((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      resetTranscript();
+    }
+  }, [transcript, resetTranscript]);
+
+  // Show error if voice input fails
+  useEffect(() => {
+    if (voiceError) {
+      console.error("Voice input error:", voiceError);
+    }
+  }, [voiceError]);
 
   const filteredCommands = mentionCommands.filter((cmd) =>
     cmd.name.startsWith(mentionQuery.toLowerCase()),
@@ -188,6 +215,17 @@ export function ChatInput({
     onTypingStop();
   }, [content, onSend, onTypingStop]);
 
+  const handleMicClick = useCallback(() => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }, [isRecording, startRecording, stopRecording]);
+
+  const isEmpty = !content.trim();
+  const showMicButton = isEmpty && !isTranscribing;
+
   return (
     <div className="relative flex gap-2 p-4 border-t bg-background">
       {showMentions && filteredCommands.length > 0 && (
@@ -208,12 +246,37 @@ export function ChatInput({
         }}
         onKeyDown={handleKeyDown}
         placeholder="Type a message... Use @copilot to invoke AI"
-        disabled={disabled}
+        disabled={disabled || isRecording || isTranscribing}
         className="min-h-[40px] max-h-[120px] resize-none"
       />
-      <Button onClick={handleSubmit} disabled={disabled || !content.trim()}>
-        Send
-      </Button>
+      {showMicButton ? (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleMicClick}
+          disabled={disabled}
+          aria-label={isRecording ? "Stop recording" : "Start voice recording"}
+          title="Record voice message"
+        >
+          {isRecording ? (
+            <div className="w-4 h-4 bg-red-500 rounded-full animate-pulse" />
+          ) : (
+            <MicIcon className="w-4 h-4" />
+          )}
+        </Button>
+      ) : (
+        <Button
+          onClick={handleSubmit}
+          disabled={disabled || !content.trim()}
+          aria-label={isTranscribing ? "Transcribing" : "Send message"}
+        >
+          {isTranscribing ? (
+            <Loader2Icon className="w-4 h-4 animate-spin" />
+          ) : (
+            "Send"
+          )}
+        </Button>
+      )}
     </div>
   );
 }

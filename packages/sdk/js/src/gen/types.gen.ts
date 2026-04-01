@@ -432,3 +432,45 @@ export type ChatLeaveRoomResponses = {
 
 export type ChatLeaveRoomResponse =
   ChatLeaveRoomResponses[keyof ChatLeaveRoomResponses];
+
+export type AiSpeakData = {
+  body: {
+    text: string;
+    voice?: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
+  };
+  path?: never;
+  query?: never;
+  url: "/ai/voice/speak";
+};
+
+export type AiSpeakResponses = {
+  /**
+   * OK
+   */
+  200: {
+    audio: string;
+  };
+};
+
+export type AiSpeakResponse = AiSpeakResponses[keyof AiSpeakResponses];
+
+export type AiTranscribeData = {
+  body: {
+    audio: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/ai/voice/transcribe";
+};
+
+export type AiTranscribeResponses = {
+  /**
+   * OK
+   */
+  200: {
+    text: string;
+  };
+};
+
+export type AiTranscribeResponse =
+  AiTranscribeResponses[keyof AiTranscribeResponses];

@@ -12,7 +12,7 @@ import { COPILOT_QUEUE } from "./copilot/types.js";
 import { BullBoardModule } from "@bull-board/nestjs";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { CopilotQueueEvents } from "./copilot/copilot-queue.events.js";
-import { CopilotRateLimitGuard } from "./copilot/copilot-rate-limit.guard.js";
+import { CopilotRateLimit } from "./copilot/copilot.rate-limit.ts";
 
 @Module({
   imports: [
@@ -34,7 +34,7 @@ import { CopilotRateLimitGuard } from "./copilot/copilot-rate-limit.guard.js";
     ChatPresenceService,
     ChatTypingService,
     CopilotQueueEvents,
-    CopilotRateLimitGuard,
+    CopilotRateLimit,
   ],
   exports: [ChatService, ChatGateway],
 })

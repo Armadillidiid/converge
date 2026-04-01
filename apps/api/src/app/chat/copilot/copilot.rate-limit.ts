@@ -3,10 +3,10 @@ import { RedisService } from "#src/modules/redis/redis.service.js";
 import {
   COPILOT_RATE_LIMIT_COUNT,
   COPILOT_RATE_LIMIT_WINDOW_MS,
-} from "./constants.js";
+} from "./constants.ts";
 
 @Injectable()
-export class CopilotRateLimitGuard {
+export class CopilotRateLimit {
   constructor(private readonly redis: RedisService) {}
 
   async checkLimit(

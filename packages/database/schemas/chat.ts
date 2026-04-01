@@ -71,6 +71,30 @@ export const chatMessage = pgTable(
   ],
 );
 
+export const chatMessageSummary = pgTable(
+  "chat_message_summary",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    roomId: text("room_id")
+      .notNull()
+      .references(() => chatRoom.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    startMessageId: text("start_message_id"),
+    endMessageId: text("end_message_id"),
+    tokenCount: text("token_count"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("chat_message_summary_room_id_idx").on(table.roomId),
+    index("chat_message_summary_room_created_idx").on(
+      table.roomId,
+      table.createdAt,
+    ),
+  ],
+);
+
 export const chatInvitation = pgTable(
   "chat_invitation",
   {
@@ -130,6 +154,16 @@ export const chatMessageRelations = relations(chatMessage, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export const chatMessageSummaryRelations = relations(
+  chatMessageSummary,
+  ({ one }) => ({
+    room: one(chatRoom, {
+      fields: [chatMessageSummary.roomId],
+      references: [chatRoom.id],
+    }),
+  }),
+);
 
 export const chatInvitationRelations = relations(chatInvitation, ({ one }) => ({
   room: one(chatRoom, {

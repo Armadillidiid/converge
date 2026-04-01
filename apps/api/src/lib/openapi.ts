@@ -20,5 +20,19 @@ export const genOpenapiDocs = async () => {
     ...(servers ? { servers } : {}),
   });
 
+  const transcribeRequestBody =
+    spec.paths?.["/ai/voice/transcribe"]?.post?.requestBody;
+
+  if (
+    transcribeRequestBody &&
+    "content" in transcribeRequestBody &&
+    transcribeRequestBody.content["multipart/form-data"]
+  ) {
+    transcribeRequestBody.content = {
+      "multipart/form-data":
+        transcribeRequestBody.content["multipart/form-data"],
+    };
+  }
+
   return spec;
 };

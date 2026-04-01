@@ -58,8 +58,8 @@ export const VerifyEmailTemplate = ({
                   </Button>
                 </Section>
                 <Text className="mt-6 text-sm text-zinc-500">
-                  If you did not create an account with Converge, you can
-                  safely ignore this email.
+                  If you did not create an account with Converge, you can safely
+                  ignore this email.
                 </Text>
                 <Hr className="my-6" />
                 <Text className="m-0 text-xs text-zinc-400">

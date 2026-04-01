@@ -11,6 +11,10 @@ import {
 import { client } from "../client.gen";
 import { ApiClient, type Options } from "../sdk.gen";
 import type {
+  AiSpeakData,
+  AiSpeakResponse,
+  AiTranscribeData,
+  AiTranscribeResponse,
   ChatAcceptInvitationData,
   ChatAcceptInvitationResponse,
   ChatCreateRoomData,
@@ -495,6 +499,56 @@ export const chatLeaveRoomMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await ApiClient.__registry.get().chat.leaveRoom({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Convert text to speech
+ */
+export const aiSpeakMutation = (
+  options?: Partial<Options<AiSpeakData>>,
+): UseMutationOptions<AiSpeakResponse, DefaultError, Options<AiSpeakData>> => {
+  const mutationOptions: UseMutationOptions<
+    AiSpeakResponse,
+    DefaultError,
+    Options<AiSpeakData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await ApiClient.__registry.get().ai.speak({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Convert speech to text
+ */
+export const aiTranscribeMutation = (
+  options?: Partial<Options<AiTranscribeData>>,
+): UseMutationOptions<
+  AiTranscribeResponse,
+  DefaultError,
+  Options<AiTranscribeData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AiTranscribeResponse,
+    DefaultError,
+    Options<AiTranscribeData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await ApiClient.__registry.get().ai.transcribe({
         ...options,
         ...fnOptions,
         throwOnError: true,

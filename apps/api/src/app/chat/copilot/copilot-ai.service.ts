@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { models, generateText } from "@repo/ai";
 import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
-import { eq, desc } from "@repo/database";
+import { eq, desc, and, gt } from "@repo/database";
 import { schema } from "@repo/database";
 import { COPILOT_USER_ID } from "@repo/database/constants";
 import {
@@ -14,6 +14,8 @@ import {
 } from "./constants.js";
 import { TokenCounter } from "./token-counter.js";
 import { ModelInfoService } from "./model-info.service.js";
+import { CompactionService } from "./compaction.service.js";
+import { SENDER_ID_COMPACTOR } from "./compaction.types.js";
 
 interface ContextMessage {
   senderId: string;
@@ -23,17 +25,22 @@ interface ContextMessage {
 
 @Injectable()
 export class CopilotAiService {
+  private readonly logger = new Logger(CopilotAiService.name);
   private tokenCounter: TokenCounter;
 
   constructor(
     private readonly drizzle: DrizzleService,
     private readonly modelInfo: ModelInfoService,
+    private readonly compactionService: CompactionService,
   ) {
     this.tokenCounter = new TokenCounter(COPILOT_TOKENIZER_MODEL_ID);
   }
 
   async buildContext(roomId: string): Promise<ContextMessage[]> {
     const contextLimit = await this.getContextLimit();
+
+    const latestSummary = await this.compactionService.getLatestSummary(roomId);
+    const sinceDate = latestSummary?.createdAt ?? new Date(0);
 
     const messages = await this.drizzle.db
       .select({
@@ -42,12 +49,30 @@ export class CopilotAiService {
         createdAt: schema.chatMessage.createdAt,
       })
       .from(schema.chatMessage)
-      .where(eq(schema.chatMessage.roomId, roomId))
+      .where(
+        latestSummary
+          ? and(
+              eq(schema.chatMessage.roomId, roomId),
+              gt(schema.chatMessage.createdAt, sinceDate),
+            )
+          : eq(schema.chatMessage.roomId, roomId),
+      )
       .orderBy(desc(schema.chatMessage.createdAt))
       .limit(MAX_MESSAGES_FETCH);
 
     const context: ContextMessage[] = [];
     let totalTokens = 0;
+
+    if (latestSummary) {
+      const summaryTokens =
+        this.tokenCounter.countTokens(latestSummary.content) + 4;
+      context.push({
+        senderId: SENDER_ID_COMPACTOR,
+        content: `[Previous conversation summary]\n${latestSummary.content}`,
+        createdAt: latestSummary.createdAt,
+      });
+      totalTokens += summaryTokens;
+    }
 
     for (const msg of messages) {
       const msgTokens = this.tokenCounter.countTokens(msg.content) + 4;
@@ -56,6 +81,12 @@ export class CopilotAiService {
       }
       context.push(msg);
       totalTokens += msgTokens;
+    }
+
+    const shouldCompact = await this.compactionService.shouldCompact(roomId);
+    if (shouldCompact) {
+      this.logger.log(`Queueing compaction for room ${roomId}`);
+      await this.compactionService.queueCompaction(roomId);
     }
 
     return context.reverse();

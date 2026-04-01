@@ -10,6 +10,7 @@
     "db": "pnpm --filter database",
     "sdk": "pnpm --filter sdk",
     "auth": "pnpm --filter auth",
+    "infra": "pnpm --filter infra",
     "analytics": "pnpm --filter analytics",
     "build": "turbo build",
     "dev": "turbo dev",

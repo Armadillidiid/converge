@@ -1,0 +1,81 @@
+name: Yeet to production
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+  id-token: write
+  actions: read
+
+jobs:
+  files-changed:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      api: ${{ steps.filter.outputs.api }}
+      infra: ${{ steps.filter.outputs.infra }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            app: &shared
+              - "*"
+              - ".github/**"
+              - "apps/app/**"
+            api:
+              - "*"
+              - ".github/**"
+              - "apps/api/**"
+            infra:
+              - "infra/**"
+
+  deploy-infra:
+    needs: files-changed
+    if: ${{ needs.files-changed.outputs.infra == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: ./.github/composite/pnpm-install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-duration-seconds: 900
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Pre-deployment validation
+        run: |
+          pnpm infra cdk synth
+          pnpm infra cdk diff || echo "Diff completed with changes"
+
+      - name: Deploy infrastructure
+        run: |
+          pnpm infra cdk deploy --all --require-approval never --outputs-file outputs.json
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: outputs
+          path: outputs.json
+          retention-days: 90
+
+  deploy-app:
+    needs: files-changed
+    uses: ./.github/workflows/deploy-app.yaml
+    if: ${{ needs.files-changed.outputs.app == 'true' }}
+    secrets: inherit

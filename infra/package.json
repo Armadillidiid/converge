@@ -1,0 +1,24 @@
+{
+  "name": "@repo/infra",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cdk": "cdk",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.211.0",
+    "constructs": "^10.0.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "aws-cdk": "2.1027.0",
+    "typescript": "catalog:"
+  }
+}

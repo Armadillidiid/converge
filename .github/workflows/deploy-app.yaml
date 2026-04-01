@@ -28,7 +28,6 @@ jobs:
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     outputs:
       url: ${{ steps.deploy.outputs.url }}
     steps:

@@ -15,6 +15,19 @@ cd /var/app/current
 # Ensure scripts are executable
 chmod +x scripts/*.sh
 
+echo "Checking disk usage before pull..."
+df -h
+
+echo "Cleaning old Docker artifacts to free disk space..."
+# Safe cleanup: do not prune volumes so Postgres/Redis data remains intact.
+docker container prune -f || true
+docker image prune -a -f || true
+docker builder prune -a -f || true
+docker network prune -f || true
+
+echo "Disk usage after cleanup..."
+df -h
+
 # Load infrastructure environment variables (AWS_REGION, ECR_REPOSITORY)
 if [ -f .env.infra ]; then
 	echo "Loading infrastructure environment variables..."
@@ -43,7 +56,9 @@ fi
 # Pull the latest Docker image
 if [ -f docker-compose.prod.yml ]; then
 	echo "Pulling Docker images..."
-	$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml pull
+	# Pull app images first (largest), then the rest.
+	$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml pull api worker
+	$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml pull caddy redis postgres mailpit
 fi
 
 # Clean up dangling images

@@ -29,6 +29,7 @@ Core behavior:
 - API Base URL: [https://converge-api.emmanuelisenah.com/api](https://converge-api.emmanuelisenah.com/api)
 - Frontend URL: [https://converge.emmanuelisenah.com](https://converge.emmanuelisenah.com)
 - Docs URL: [https://converge-api.emmanuelisenah.com/api/docs](https://converge-api.emmanuelisenah.com/api/docs)
+- Email dashboard URL: [https://converge-api.emmanuelisenah.com/mailpit](https://converge-api.emmanuelisenah.com/mailpit)
 - Queue dashboard URL: [https://converge-api.emmanuelisenah.com/api/queues](https://converge-api.emmanuelisenah.com/api/queues)
 
 ### Seeded accounts

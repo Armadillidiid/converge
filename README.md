@@ -26,6 +26,22 @@ Core behavior:
 4. If a message contains `@copilot`, a background job is queued.
 5. Worker generates an AI response using room context and posts it back as a normal chat message.
 
+## Quick demo access (read this first)
+
+- API Base URL: `https://converge-api.emmanuelisenah.com/api`
+- Frontend URL: `https://converge.emmanuelisenah.com`
+- Docs URL: `https://converge-api.emmanuelisenah.com/api/docs`
+
+Production test users are seeded from migration file:
+
+- `packages/database/drizzle/20260331213405_seed-users/migration.sql`
+
+| Name          | Email                 | Password      | Notes               |
+| ------------- | --------------------- | ------------- | ------------------- |
+| Alice Johnson | `alice@example.com`   | `password123` | Human test account  |
+| Bob Smith     | `bob@example.com`     | `password123` | Human test account  |
+| Charlie Brown | `charlie@example.com` | `password123` | Optional third user |
+
 ---
 
 ## 2) Architecture Overview
@@ -555,18 +571,3 @@ Backend behavior:
 5. Add integration tests for websocket flows (presence/typing/reconnect).
 6. Add robust copilot observability (latency metrics, queue depth, token usage).
 7. Expand API error model consistency (structured error envelope everywhere).
-
----
-
-## Test credentials / demo notes
-
-The repository seeds synthetic users (`user1@example.com` … `user20@example.com`) in `packages/database/seed.ts`, but **no guaranteed reusable plaintext passwords are committed** for evaluator login.
-
-Use placeholders below for submission/demo package:
-
-- API Base URL: `<YOUR_DEPLOYED_API_URL>`
-- Docs URL: `<YOUR_DOCS_URL>`
-- Test User A: `<EMAIL / PASSWORD OR TOKEN>`
-- Test User B: `<EMAIL / PASSWORD OR TOKEN>`
-
-For local demo, create users via `/auth/sign-up` and sign in through frontend.

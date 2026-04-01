@@ -4,7 +4,7 @@ import { DrizzleModule } from "#src/modules/drizzle/drizzle.module.js";
 import { RedisModule } from "#src/modules/redis/redis.module.js";
 import { CopilotProcessor } from "./copilot.processor.js";
 import { CopilotAiService } from "./copilot-ai.service.js";
-import { CopilotRateLimitGuard } from "./copilot-rate-limit.guard.js";
+import { CopilotRateLimit } from "./copilot.rate-limit.ts";
 import { ModelInfoService } from "./model-info.service.js";
 import { COPILOT_QUEUE } from "./types.js";
 
@@ -19,9 +19,9 @@ import { COPILOT_QUEUE } from "./types.js";
   providers: [
     CopilotProcessor,
     CopilotAiService,
-    CopilotRateLimitGuard,
+    CopilotRateLimit,
     ModelInfoService,
   ],
-  exports: [CopilotAiService, CopilotRateLimitGuard, ModelInfoService],
+  exports: [CopilotAiService, CopilotRateLimit, ModelInfoService],
 })
 export class CopilotModule {}

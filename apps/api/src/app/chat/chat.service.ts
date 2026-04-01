@@ -30,7 +30,7 @@ import {
 import { ChatPresenceService } from "./chat-presence.service.js";
 import { ChatTypingService } from "./chat-typing.service.js";
 import { COPILOT_QUEUE, COPILOT_MESSAGE_JOB } from "./copilot/types.js";
-import { CopilotRateLimitGuard } from "./copilot/copilot-rate-limit.guard.js";
+import { CopilotRateLimit } from "./copilot/copilot.rate-limit.ts";
 import { COPILOT_RATE_LIMIT_WINDOW_MS } from "./copilot/constants.js";
 
 @Injectable()
@@ -39,7 +39,7 @@ export class ChatService {
     private readonly drizzle: DrizzleService,
     private readonly presenceService: ChatPresenceService,
     private readonly typingService: ChatTypingService,
-    private readonly rateLimitGuard: CopilotRateLimitGuard,
+    private readonly rateLimitGuard: CopilotRateLimit,
     @InjectQueue(COPILOT_QUEUE) private readonly copilotQueue: Queue,
   ) {}
 

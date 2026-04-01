@@ -255,6 +255,7 @@ export function ChatInput({
           size="icon"
           onClick={handleMicClick}
           disabled={disabled}
+          aria-label={isRecording ? "Stop recording" : "Start voice recording"}
           title="Record voice message"
         >
           {isRecording ? (
@@ -264,7 +265,11 @@ export function ChatInput({
           )}
         </Button>
       ) : (
-        <Button onClick={handleSubmit} disabled={disabled || !content.trim()}>
+        <Button
+          onClick={handleSubmit}
+          disabled={disabled || !content.trim()}
+          aria-label={isTranscribing ? "Transcribing" : "Send message"}
+        >
           {isTranscribing ? (
             <Loader2Icon className="w-4 h-4 animate-spin" />
           ) : (

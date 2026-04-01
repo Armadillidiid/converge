@@ -98,6 +98,13 @@ export function MessageItem({
             className="h-6 w-6 opacity-0 group-hover:opacity-100 shrink-0"
             onClick={handlePlayClick}
             disabled={isLoading}
+            aria-label={
+              isLoading
+                ? "Generating audio"
+                : isSpeaking
+                  ? "Stop playback"
+                  : "Read message aloud"
+            }
             title={isSpeaking ? "Stop" : "Read aloud"}
           >
             {isLoading ? (

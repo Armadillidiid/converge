@@ -5,13 +5,17 @@ converge-api.emmanuelisenah.com {
     file_server
   }
 
-  @mailpit path /mailpit*
-  handle @mailpit {
-    basicauth {
+  @mailpitNoSlash path /mailpit
+  redir @mailpitNoSlash /mailpit/ 308
+
+  handle_path /mailpit/* {
+    basic_auth {
       {$MAILPIT_BASIC_AUTH_USER} {$MAILPIT_BASIC_AUTH_PASSWORD_HASH}
     }
-    uri strip_prefix /mailpit
-    reverse_proxy mailpit:8025
+    rewrite * /mailpit{path}
+    reverse_proxy mailpit:8025 {
+      header_up Host {host}
+    }
   }
 
   reverse_proxy api:{$APP_PORT}

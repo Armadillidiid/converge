@@ -74,7 +74,6 @@ export function useVoiceInput(): UseVoiceInputResult {
           method: "POST",
           body: formData,
           headers: token ? { Authorization: `Bearer ${token}` } : {},
-          credentials: "include",
         },
       );
 

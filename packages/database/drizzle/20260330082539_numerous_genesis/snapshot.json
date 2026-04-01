@@ -2,35 +2,22 @@
   "version": "8",
   "dialect": "postgres",
   "id": "99dbd8e0-654e-431b-9e30-af903578961e",
-  "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
   "ddl": [
     {
-      "values": [
-        "active",
-        "inactive"
-      ],
+      "values": ["active", "inactive"],
       "name": "listing_status",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "rent",
-        "sale"
-      ],
+      "values": ["rent", "sale"],
       "name": "listing_type",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "apartment",
-        "house",
-        "land",
-        "commercial"
-      ],
+      "values": ["apartment", "house", "land", "commercial"],
       "name": "property_type",
       "entityType": "enums",
       "schema": "public"
@@ -1237,14 +1224,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "account_user_id_user_id_fkey",
@@ -1254,14 +1237,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "session_user_id_user_id_fkey",
@@ -1271,14 +1250,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "agent_id"
-      ],
+      "columns": ["agent_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "name": "listing_agent_id_user_id_fkey",
@@ -1288,14 +1263,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "room_id"
-      ],
+      "columns": ["room_id"],
       "schemaTo": "public",
       "tableTo": "chat_room",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chat_invitation_room_id_chat_room_id_fkey",
@@ -1305,14 +1276,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "inviter_id"
-      ],
+      "columns": ["inviter_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chat_invitation_inviter_id_user_id_fkey",
@@ -1322,14 +1289,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "invitee_id"
-      ],
+      "columns": ["invitee_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chat_invitation_invitee_id_user_id_fkey",
@@ -1339,14 +1302,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "room_id"
-      ],
+      "columns": ["room_id"],
       "schemaTo": "public",
       "tableTo": "chat_room",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chat_member_room_id_chat_room_id_fkey",
@@ -1356,14 +1315,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chat_member_user_id_user_id_fkey",
@@ -1373,14 +1328,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "room_id"
-      ],
+      "columns": ["room_id"],
       "schemaTo": "public",
       "tableTo": "chat_room",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chat_message_room_id_chat_room_id_fkey",
@@ -1390,14 +1341,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "sender_id"
-      ],
+      "columns": ["sender_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chat_message_sender_id_user_id_fkey",
@@ -1407,14 +1354,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "owner_id"
-      ],
+      "columns": ["owner_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chat_room_owner_id_user_id_fkey",
@@ -1423,9 +1366,7 @@
       "table": "chat_room"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_pkey",
       "schema": "public",
@@ -1433,9 +1374,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "session_pkey",
       "schema": "public",
@@ -1443,9 +1382,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "user_pkey",
       "schema": "public",
@@ -1453,9 +1390,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "verification_pkey",
       "schema": "public",
@@ -1463,9 +1398,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "listing_pkey",
       "schema": "public",
@@ -1473,9 +1406,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chat_invitation_pkey",
       "schema": "public",
@@ -1483,9 +1414,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chat_member_pkey",
       "schema": "public",
@@ -1493,9 +1422,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chat_message_pkey",
       "schema": "public",
@@ -1503,9 +1430,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chat_room_pkey",
       "schema": "public",
@@ -1514,9 +1439,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "token"
-      ],
+      "columns": ["token"],
       "nullsNotDistinct": false,
       "name": "session_token_key",
       "schema": "public",
@@ -1525,9 +1448,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "user_email_key",
       "schema": "public",

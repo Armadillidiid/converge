@@ -41,24 +41,22 @@ export async function bootstrap(app: NestExpressApplication) {
   const authInstance = app.get(AuthService<Auth>).instance;
   app.use(authBasePath, toNodeHandler(authInstance));
 
-  if (configService.get("NODE_ENV", { infer: true }) === "development") {
-    const { genOpenapiDocs } = await import("./lib/openapi.js");
-    const { apiReference } = await import("@scalar/nestjs-api-reference");
+  const { genOpenapiDocs } = await import("./lib/openapi.js");
+  const { apiReference } = await import("@scalar/nestjs-api-reference");
 
-    app.use(
-      "/docs",
-      apiReference({
-        sources: [
-          { content: await genOpenapiDocs(), title: "Main API" },
-          {
-            // Document refuses to load via url so we pass it as content
-            content: await authInstance.api.generateOpenAPISchema(),
-            title: "Auth",
-          },
-        ],
-      }),
-    );
-  }
+  app.use(
+    "/docs",
+    apiReference({
+      sources: [
+        { content: await genOpenapiDocs(), title: "Main API" },
+        {
+          // Document refuses to load via url so we pass it as content
+          content: await authInstance.api.generateOpenAPISchema(),
+          title: "Auth",
+        },
+      ],
+    }),
+  );
 
   return {
     app,

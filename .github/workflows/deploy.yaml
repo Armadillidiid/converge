@@ -73,8 +73,8 @@ jobs:
 
       - name: Pre-deployment validation
         run: |
-          pnpm infra:synth
-          pnpm infra:diff || echo "Diff completed with changes"
+          pnpm infra cdk synth
+          pnpm infra cdk diff || echo "Diff completed with changes"
 
       - name: Deploy infrastructure
         run: |

@@ -2,8 +2,6 @@
 
 Real-time collaborative team chat with an on-demand AI assistant (`@copilot`), built as a pnpm/Turbo monorepo with a NestJS backend and Next.js frontend.
 
-> This README is implementation-accurate as of the current repository state (not a future-state design doc).
-
 ---
 
 ## 1) Project Overview
@@ -28,13 +26,12 @@ Core behavior:
 
 ## Quick demo access (read this first)
 
-- API Base URL: `https://converge-api.emmanuelisenah.com/api`
-- Frontend URL: `https://converge.emmanuelisenah.com`
-- Docs URL: `https://converge-api.emmanuelisenah.com/api/docs`
+- API Base URL: [https://converge-api.emmanuelisenah.com/api](https://converge-api.emmanuelisenah.com/api)
+- Frontend URL: [https://converge.emmanuelisenah.com](https://converge.emmanuelisenah.com)
+- Docs URL: [https://converge-api.emmanuelisenah.com/api/docs](https://converge-api.emmanuelisenah.com/api/docs)
+- Queue dashboard URL: [https://converge-api.emmanuelisenah.com/api/queues](https://converge-api.emmanuelisenah.com/api/queues)
 
-Production test users are seeded from migration file:
-
-- `packages/database/drizzle/20260331213405_seed-users/migration.sql`
+### Seeded accounts
 
 | Name          | Email                 | Password      | Notes               |
 | ------------- | --------------------- | ------------- | ------------------- |

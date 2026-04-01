@@ -1,0 +1,107 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy-web:
+        description: "Deploy web application"
+        required: false
+        type: boolean
+        default: true
+      deploy-api:
+        description: "Deploy API application"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  id-token: write
+  actions: read
+
+jobs:
+  files-changed:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      api: ${{ steps.filter.outputs.api }}
+      infra: ${{ steps.filter.outputs.infra }}
+      packages: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web: &shared
+              - "*"
+              - ".github/**"
+              - "apps/web/**"
+            api:
+              - "*"
+              - ".github/**"
+              - "apps/api/**"
+            infra:
+              - "infra/**"
+
+  deploy-infra:
+    needs: [files-changed]
+    if: ${{ needs.files-changed.outputs.infra == 'true' }}
+    environment: production
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: ./.github/composite/pnpm-install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-duration-seconds: 900
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Pre-deployment validation
+        run: |
+          pnpm infra:synth
+          pnpm infra:diff || echo "Diff completed with changes"
+
+      - name: Deploy infrastructure
+        run: |
+          pnpm infra cdk deploy --all --require-approval never --outputs-file outputs.json
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: outputs
+          path: outputs.json
+          retention-days: 90
+
+  deploy-web:
+    needs: [files-changed, deploy-infra]
+    uses: ./.github/workflows/deploy-pipeline.yaml
+    if: ${{ always() && (needs.files-changed.outputs.web == 'true' || needs.files-changed.outputs.infra == 'true' || (github.event_name == 'workflow_dispatch' && inputs.deploy-web)) }}
+    with:
+      stack-name: SkewProtectionStack/Frontend
+      aws-region: ${{ vars.AWS_REGION }}
+    secrets: inherit
+
+  deploy-api:
+    needs: [files-changed, deploy-infra]
+    uses: ./.github/workflows/deploy-pipeline.yaml
+    if: ${{ always() && (needs.files-changed.outputs.api == 'true' || needs.files-changed.outputs.infra == 'true' || (github.event_name == 'workflow_dispatch' && inputs.deploy-api)) }}
+    with:
+      stack-name: SkewProtectionStack/Backend
+      aws-region: ${{ vars.AWS_REGION }}
+    secrets: inherit

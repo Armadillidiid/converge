@@ -29,10 +29,16 @@ interface AuthenticatedSocket extends Socket {
   };
 }
 
+const wsOrigins = (process.env["APP_TRUSTED_ORIGINS"] ?? "*")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const wsCorsOrigin = wsOrigins.includes("*") ? "*" : wsOrigins;
+
 @Injectable()
 @UseGuards(SocketIOAuthGuard)
 @WebSocketGateway({
-  cors: { origin: "*" },
+  cors: { origin: wsCorsOrigin },
   namespace: "/api/chat",
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {

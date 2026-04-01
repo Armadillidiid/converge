@@ -5,6 +5,7 @@ import { DrizzleService } from "#src/modules/drizzle/drizzle.service.js";
 import { ChatPresenceService } from "./chat-presence.service.js";
 import { ChatTypingService } from "./chat-typing.service.js";
 import { COPILOT_QUEUE } from "./copilot/types.js";
+import { CopilotRateLimit } from "./copilot/copilot.rate-limit.ts";
 import { Queue } from "bullmq";
 
 describe("ChatService", () => {
@@ -60,6 +61,14 @@ describe("ChatService", () => {
           provide: ChatTypingService,
           useValue: {
             getTypingUsers: vi.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: CopilotRateLimit,
+          useValue: {
+            checkLimit: vi
+              .fn()
+              .mockResolvedValue({ allowed: true, remaining: 9 }),
           },
         },
         {
@@ -142,6 +151,7 @@ describe("ChatService", () => {
       const inviterId = "user-123";
       const roomId = "room-123";
       const inviteeId = "user-456";
+      const inviteeEmail = "invitee@example.com";
 
       const mockRoom = {
         id: roomId,
@@ -161,6 +171,12 @@ describe("ChatService", () => {
         createdAt: new Date(),
       };
 
+      const mockInvitee = {
+        id: inviteeId,
+        email: inviteeEmail,
+        name: "Invitee",
+      };
+
       mockDb.select.mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
@@ -169,9 +185,21 @@ describe("ChatService", () => {
         }),
       });
 
+      mockDb.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([mockInvitee]),
+          }),
+        }),
+      });
+
       mockDb.returning.mockResolvedValue([mockInvitation]);
 
-      const result = await service.inviteMember(inviterId, roomId, inviteeId);
+      const result = await service.inviteMember(
+        inviterId,
+        roomId,
+        inviteeEmail,
+      );
 
       expect(result.id).toBe(mockInvitation.id);
       expect(result.roomId).toBe(mockInvitation.roomId);

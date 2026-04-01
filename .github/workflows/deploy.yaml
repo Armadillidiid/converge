@@ -78,4 +78,6 @@ jobs:
     needs: files-changed
     uses: ./.github/workflows/deploy-app.yaml
     if: ${{ needs.files-changed.outputs.app == 'true' }}
+    with:
+      environment: production
     secrets: inherit

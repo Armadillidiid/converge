@@ -6,7 +6,7 @@ on:
       environment:
         description: "Deployment environment"
         type: string
-        required: true
+        required: false
         default: "production"
       ref:
         description: "Git ref to deploy"

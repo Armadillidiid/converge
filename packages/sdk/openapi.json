@@ -992,7 +992,7 @@
                 "properties": {
                   "audio": {
                     "type": "string",
-                    "format": "binary"
+                    "contentMediaType": "*/*"
                   }
                 },
                 "required": ["audio"]

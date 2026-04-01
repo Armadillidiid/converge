@@ -1,9 +1,7 @@
 {
   "name": "@repo/infra",
   "version": "0.1.1",
-  "bin": {
-    "infra": "bin/infra.js"
-  },
+  "private": true,
   "type": "module",
   "scripts": {
     "cdk": "cdk",

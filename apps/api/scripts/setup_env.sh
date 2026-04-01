@@ -25,7 +25,7 @@ aws ssm get-parameters-by-path \
 	--with-decryption \
 	--recursive \
 	--query 'Parameters[*].[Name,Value]' \
-	--output text | while read -r name value; do
+	--output text | while IFS=$'\t' read -r name value; do
 	# Extract the parameter name (remove the path prefix)
 	param_name="${name##*/}"
 	# Write to .env file

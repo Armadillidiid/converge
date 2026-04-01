@@ -70,6 +70,7 @@ export class BackendStack extends cdk.Stack {
       "Allow HTTPS traffic",
     );
 
+    // TODO: Switch to using SSM Session Manager for secure access
     ec2SecurityGroup.addIngressRule(
       ec2.Peer.anyIpv4(),
       ec2.Port.tcp(22),
@@ -248,7 +249,7 @@ export class BackendStack extends cdk.Stack {
     // Build output artifact
     const buildOutput = new codepipeline.Artifact("BuildOutput");
 
-    // CodePipeline - Auto-triggered from GitHub with manual approval gate
+    // CodePipeline - Auto-triggered from GitHub
     this.pipeline = new codepipeline.Pipeline(this, "ApiPipeline", {
       artifactBucket,
     });

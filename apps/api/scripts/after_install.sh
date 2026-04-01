@@ -28,10 +28,13 @@ fi
 
 # Login to ECR to pull the Docker image
 if [ -n "$AWS_REGION" ] && [ -n "$ECR_REPOSITORY" ]; then
+	ECR_REGISTRY="${ECR_REGISTRY:-${ECR_REPOSITORY%%/*}}"
+
 	echo "Logging in to Amazon ECR..."
 	echo "Region: ${AWS_REGION}"
 	echo "Repository: ${ECR_REPOSITORY}"
-	aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPOSITORY%:*}
+	echo "Registry: ${ECR_REGISTRY}"
+	aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin "${ECR_REGISTRY}"
 else
 	echo "ERROR: AWS_REGION or ECR_REPOSITORY not set in .env file"
 	exit 1

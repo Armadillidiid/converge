@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+if command -v docker-compose >/dev/null 2>&1; then
+	DOCKER_COMPOSE_CMD="docker-compose"
+else
+	DOCKER_COMPOSE_CMD="docker compose"
+fi
+
 echo "Running after install tasks..."
 
 # Navigate to application directory
@@ -34,7 +40,7 @@ fi
 # Pull the latest Docker image
 if [ -f docker-compose.prod.yml ]; then
 	echo "Pulling Docker images..."
-	docker-compose -f docker-compose.prod.yml pull
+	$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml pull
 fi
 
 # Clean up dangling images

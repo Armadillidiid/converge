@@ -12,10 +12,10 @@ hooks:
       timeout: 60
       runas: root
   BeforeInstall:
-    - location: scripts/setup_env.sh
+    - location: scripts/before_install.sh
       timeout: 300
       runas: root
-    - location: scripts/before_install.sh
+    - location: scripts/setup_env.sh
       timeout: 300
       runas: root
   AfterInstall:

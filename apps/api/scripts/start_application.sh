@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+if command -v docker-compose >/dev/null 2>&1; then
+	DOCKER_COMPOSE_CMD="docker-compose"
+else
+	DOCKER_COMPOSE_CMD="docker compose"
+fi
+
 echo "Starting application..."
 
 # Navigate to application directory
@@ -18,7 +24,7 @@ if [ -f docker-compose.prod.yml ]; then
 	echo "Using environment file: .env"
 
 	# Docker Compose automatically loads .env file from the current directory
-	docker-compose -f docker-compose.prod.yml up -d
+	$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml up -d
 
 	# Wait for container to be healthy
 	echo "Waiting for container to be ready..."

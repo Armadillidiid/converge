@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+if command -v docker-compose >/dev/null 2>&1; then
+	DOCKER_COMPOSE_CMD="docker-compose"
+else
+	DOCKER_COMPOSE_CMD="docker compose"
+fi
+
 echo "Validating service..."
 
 # Navigate to application directory
@@ -15,7 +21,7 @@ if [ ! -f "$COMPOSE_FILE" ]; then
 fi
 
 # Get all running containers from docker-compose
-CONTAINERS=$(docker-compose -f "$COMPOSE_FILE" ps -q)
+CONTAINERS=$($DOCKER_COMPOSE_CMD -f "$COMPOSE_FILE" ps -q)
 
 if [ -z "$CONTAINERS" ]; then
 	echo "ERROR: No containers running"

@@ -5,7 +5,7 @@ echo "Setting up environment variables from SSM Parameter Store..."
 
 # Environment name (can be overridden)
 ENV_NAME=${ENVIRONMENT:-prod}
-APP_NAME=${APP_NAME:-ec2-codepipeline-build-deploy}
+APP_NAME=${APP_NAME:-converge}
 
 # Target .env file location
 ENV_FILE="/var/app/current/.env"
@@ -41,7 +41,7 @@ if [ ! -s "$ENV_FILE" ]; then
 	# Fallback: Create basic .env with required variables
 	cat >"$ENV_FILE" <<'EOF'
 NODE_ENV=production
-PORT=3000
+APP_PORT=3000
 EOF
 
 	echo "  ✓ Created default .env file"

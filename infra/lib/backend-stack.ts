@@ -59,8 +59,8 @@ export class BackendStack extends cdk.Stack {
     // Allow HTTP traffic from anywhere
     ec2SecurityGroup.addIngressRule(
       ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(3000),
-      "Allow HTTP traffic on port 3000",
+      ec2.Port.tcp(80),
+      "Allow HTTP traffic on port 80",
     );
 
     // Allow HTTPS traffic from anywhere (optional)
@@ -105,6 +105,8 @@ export class BackendStack extends cdk.Stack {
     );
 
     // Grant SSM Parameter Store access for environment variables
+    const appName = "converge";
+    const envName = "prod";
     ec2Role.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -114,7 +116,9 @@ export class BackendStack extends cdk.Stack {
           "ssm:GetParametersByPath",
           "ssm:DescribeParameters",
         ],
-        resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/*`],
+        resources: [
+          `arn:aws:ssm:${this.region}:${this.account}:parameter/${appName}/${envName}/*`,
+        ],
       }),
     );
 
@@ -171,8 +175,6 @@ export class BackendStack extends cdk.Stack {
     });
 
     // Create SSM Parameters for application environment variables
-    const appName = "converge";
-    const envName = "prod";
 
     // Feature flag parameter
     new ssm.StringParameter(this, "ApiFeatureFlag", {
@@ -229,10 +231,7 @@ export class BackendStack extends cdk.Stack {
     );
 
     // Add custom tags to instance for CodeDeploy targeting
-    cdk.Tags.of(this.instance).add(
-      "Application",
-      "converge",
-    );
+    cdk.Tags.of(this.instance).add("Application", "converge");
     cdk.Tags.of(this.instance).add("Environment", "prod");
 
     // CodePipeline Setup
@@ -263,7 +262,7 @@ export class BackendStack extends cdk.Stack {
         branch: "main",
         output: sourceOutput,
         connectionArn:
-          "arn:aws:codeconnections:eu-west-2:699475931797:connection/e5264c20-3888-4e2e-8df0-d22a5f091c32", // TODO:  Needs updating
+          "arn:aws:codeconnections:eu-west-2:699475931797:connection/e5264c20-3888-4e2e-8df0-d22a5f091c32",
       });
 
     this.pipeline.addStage({
@@ -308,7 +307,7 @@ export class BackendStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, "ApiUrl", {
-      value: `http://${this.instance.instancePublicIp}:3000`,
+      value: "https://converge-api.emmanuelisenah.com",
       description: "API URL (access your app here)",
     });
 

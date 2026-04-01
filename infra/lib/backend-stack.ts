@@ -262,7 +262,7 @@ export class BackendStack extends cdk.Stack {
         branch: "main",
         output: sourceOutput,
         connectionArn:
-          "arn:aws:codeconnections:eu-west-2:699475931797:connection/e5264c20-3888-4e2e-8df0-d22a5f091c32",
+          "arn:aws:codeconnections:eu-west-2:168887250584:connection/ab8f45ad-4bad-4250-9a9c-a804ece224e6",
       });
 
     this.pipeline.addStage({

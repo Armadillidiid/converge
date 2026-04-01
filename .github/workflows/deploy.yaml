@@ -5,8 +5,8 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      deploy-web:
-        description: "Deploy web application"
+      deploy-app:
+        description: "Deploy app application"
         required: false
         type: boolean
         default: true
@@ -26,7 +26,7 @@ jobs:
   files-changed:
     runs-on: ubuntu-latest
     outputs:
-      web: ${{ steps.filter.outputs.web }}
+      app: ${{ steps.filter.outputs.app }}
       api: ${{ steps.filter.outputs.api }}
       infra: ${{ steps.filter.outputs.infra }}
       packages: ${{ steps.filter.outputs.changes }}
@@ -36,10 +36,10 @@ jobs:
         id: filter
         with:
           filters: |
-            web: &shared
+            app: &shared
               - "*"
               - ".github/**"
-              - "apps/web/**"
+              - "apps/app/**"
             api:
               - "*"
               - ".github/**"
@@ -48,9 +48,8 @@ jobs:
               - "infra/**"
 
   deploy-infra:
-    needs: [files-changed]
+    needs: files-changed
     if: ${{ needs.files-changed.outputs.infra == 'true' }}
-    environment: production
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -88,20 +87,8 @@ jobs:
           path: outputs.json
           retention-days: 90
 
-  deploy-web:
-    needs: [files-changed, deploy-infra]
-    uses: ./.github/workflows/deploy-pipeline.yaml
-    if: ${{ always() && (needs.files-changed.outputs.web == 'true' || needs.files-changed.outputs.infra == 'true' || (github.event_name == 'workflow_dispatch' && inputs.deploy-web)) }}
-    with:
-      stack-name: SkewProtectionStack/Frontend
-      aws-region: ${{ vars.AWS_REGION }}
-    secrets: inherit
-
-  deploy-api:
-    needs: [files-changed, deploy-infra]
-    uses: ./.github/workflows/deploy-pipeline.yaml
-    if: ${{ always() && (needs.files-changed.outputs.api == 'true' || needs.files-changed.outputs.infra == 'true' || (github.event_name == 'workflow_dispatch' && inputs.deploy-api)) }}
-    with:
-      stack-name: SkewProtectionStack/Backend
-      aws-region: ${{ vars.AWS_REGION }}
+  deploy-app:
+    needs: files-changed
+    uses: ./.github/workflows/deploy-app.yaml
+    if: ${{ needs.files-changed.outputs.app == 'true' }}
     secrets: inherit

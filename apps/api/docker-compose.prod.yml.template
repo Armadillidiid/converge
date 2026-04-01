@@ -17,7 +17,7 @@ services:
 
   api:
     image: REPOSITORY_URI:IMAGE_TAG
-    command: ["node", "dist/main.js"]
+    command: ["node", "apps/api/dist/main.js"]
     env_file:
       - .env
     environment:
@@ -42,7 +42,7 @@ services:
 
   worker:
     image: REPOSITORY_URI:IMAGE_TAG
-    command: ["node", "dist/worker.js"]
+    command: ["node", "apps/api/dist/worker.js"]
     env_file:
       - .env
     environment:

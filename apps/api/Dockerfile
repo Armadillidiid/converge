@@ -55,4 +55,4 @@ ENV NODE_ENV="production"
 
 COPY --from=builder --chown=nestjs:nodejs /app .
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "apps/api/dist/main.js"]

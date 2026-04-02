@@ -8,13 +8,30 @@ type GoogleOAuthButtonProperties = {
   callbackURL: string;
 };
 
+function normalizePath(path: string): string {
+  if (path.startsWith("/") && !path.startsWith("//")) {
+    return path;
+  }
+
+  return "/chat";
+}
+
+function buildOAuthCompletionCallbackUrl(nextPath: string): string {
+  const normalizedNextPath = normalizePath(nextPath);
+  const query = new URLSearchParams({
+    next: normalizedNextPath,
+  });
+
+  return `${window.location.origin}/auth/oauth-complete?${query.toString()}`;
+}
+
 export function GoogleOAuthButton({
   callbackURL,
 }: GoogleOAuthButtonProperties) {
   const handleGoogleSignIn = async () => {
     const result = await auth.signIn.social({
       provider: "google",
-      callbackURL,
+      callbackURL: buildOAuthCompletionCallbackUrl(callbackURL),
     });
 
     if (result.error) {

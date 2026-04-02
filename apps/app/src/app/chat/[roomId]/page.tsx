@@ -1,7 +1,7 @@
 import { auth } from "@/shared/lib/auth";
 import { redirect, RedirectType } from "next/navigation";
 import { ChatIdView } from "@/modules/chat/chat-id.view";
-import { readAuthTokenFromServerCookies } from "@/shared/lib/auth-token-cookie.server";
+import { readBearerTokenFromServerCookies } from "@/shared/lib/auth-token-cookie.server";
 
 export default async function RoomPage({
   params,
@@ -9,7 +9,7 @@ export default async function RoomPage({
   params: Promise<{ roomId: string }>;
 }) {
   const { roomId } = await params;
-  const token = await readAuthTokenFromServerCookies();
+  const token = await readBearerTokenFromServerCookies();
   const { data: session } = await auth.getSession({
     fetchOptions: {
       auth: { type: "Bearer", token },

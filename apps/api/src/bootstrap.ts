@@ -34,7 +34,7 @@ export async function bootstrap(app: NestExpressApplication) {
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
     allowedHeaders: ["Authorization", "Content-Type"],
     exposedHeaders: ["set-auth-token"],
-    credentials: false,
+    credentials: true,
   });
 
   // Register Better Auth directly on the Express adapter.

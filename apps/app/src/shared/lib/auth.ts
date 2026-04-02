@@ -7,11 +7,9 @@ import {
 } from "./auth-token-cookie";
 
 export const auth = createAuthClient({
-  baseURL: env.NEXT_PUBLIC_API_BASE_URL
-    ? `${env.NEXT_PUBLIC_API_BASE_URL}/auth`
-    : undefined,
+  baseURL: `${env.NEXT_PUBLIC_API_BASE_URL}/auth`,
   fetchOptions: {
-    credentials: "omit",
+    credentials: "include",
     onError: () => {
       clearAuthTokenCookie();
     },

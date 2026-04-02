@@ -1,10 +1,10 @@
 import { createConfig, createClient } from "@repo/sdk/client-core";
 import { ApiClient } from "@repo/sdk";
 import { env } from "@/env";
-import { readAuthTokenFromServerCookies } from "./auth-token-cookie.server";
+import { readBearerTokenFromServerCookies } from "./auth-token-cookie.server";
 
 export async function createServerSdkClient() {
-  const token = await readAuthTokenFromServerCookies();
+  const token = await readBearerTokenFromServerCookies();
   const client = createClient(
     createConfig({
       baseUrl: env.NEXT_PUBLIC_API_BASE_URL,

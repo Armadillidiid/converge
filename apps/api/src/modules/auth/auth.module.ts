@@ -40,6 +40,9 @@ import type { SignUpEmailDto, ResetPasswordEmailDto } from "../email/index.js";
         auth: createAuth({
           db: _drizzle.db,
           redis: redis.redis,
+          baseURL: configService.getOrThrow("BETTER_AUTH_URL", {
+            infer: true,
+          }),
           socialProviders: {
             google: {
               clientId: configService.getOrThrow<string>("GOOGLE_CLIENT_ID", {

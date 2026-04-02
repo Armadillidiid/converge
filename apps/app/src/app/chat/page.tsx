@@ -1,10 +1,10 @@
 import { redirect, RedirectType } from "next/navigation";
 import { ChatView } from "@modules/chat";
 import { auth } from "@/shared/lib/auth";
-import { readAuthTokenFromServerCookies } from "@/shared/lib/auth-token-cookie.server";
+import { readBearerTokenFromServerCookies } from "@/shared/lib/auth-token-cookie.server";
 
 export default async function ChatPage() {
-  const token = await readAuthTokenFromServerCookies();
+  const token = await readBearerTokenFromServerCookies();
   const { data: session } = await auth.getSession({
     fetchOptions: {
       auth: { type: "Bearer", token },
